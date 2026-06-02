@@ -136,29 +136,118 @@ function renderTemplateThumbnail(canvas, tmpl) {
     // Show banner image preview at bottom of thumbnail
     loadImg(tmpl.bannerSrc).then(img => {
       if (!img) { (Art[tmpl.art]||Art.chevron)(ctx,w,h,tmpl.accent); drawLabel(); return; }
-      // Draw banner filling the bottom 45% of thumbnail
-      const ZONE_H = h * 0.48;
-      const ZONE_Y = h - ZONE_H;
+      // Draw at natural proportions — full width, no zoom — same as compositor
       const scale  = w / img.naturalWidth;
-      const drawH  = img.naturalHeight * scale;
-      // If banner is shorter than zone, zoom up
-      const zoom   = Math.max(ZONE_H / drawH, 1);
-      const fW = w * zoom, fH = drawH * zoom;
-      ctx.save();
-      ctx.beginPath(); ctx.rect(0, ZONE_Y, w, ZONE_H); ctx.clip();
-      ctx.drawImage(img, (w-fW)/2, h-fH, fW, fH);
-      ctx.restore();
-      // Soft gradient between top canvas-art and banner
-      const fade = ctx.createLinearGradient(0, ZONE_Y-10, 0, ZONE_Y+20);
-      fade.addColorStop(0,'rgba(0,0,0,0)'); fade.addColorStop(1,'rgba(0,0,0,0.4)');
-      ctx.fillStyle = fade; ctx.fillRect(0, ZONE_Y-10, w, 30);
+      const drawH  = Math.round(img.naturalHeight * scale);
+      const ZONE_Y = h - drawH;
+      // Draw banner at bottom at full natural width
+      ctx.drawImage(img, 0, ZONE_Y, w, drawH);
+      // Thin accent line at boundary
+      ctx.fillStyle=tmpl.accent; ctx.fillRect(0, ZONE_Y-1, w, 2);
+      // Soft blend
+      const fade = ctx.createLinearGradient(0, ZONE_Y-12, 0, ZONE_Y+8);
+      fade.addColorStop(0,'rgba(0,0,0,0)'); fade.addColorStop(1,'rgba(0,0,0,0.25)');
+      ctx.fillStyle=fade; ctx.fillRect(0, ZONE_Y-12, w, 20);
       drawLabel();
     });
-    // Draw art in top half while image loads
-    (Art[tmpl.art]||Art.chevron)(ctx, w, h*0.55, tmpl.accent);
+    // Draw art in top portion while image loads
+    (Art[tmpl.art]||Art.chevron)(ctx, w, h*0.60, tmpl.accent);
   } else {
     (Art[tmpl.art]||Art.chevron)(ctx, w, h, tmpl.accent);
     drawLabel();
+  }
+}
+
+// ── STANDARD COMPOSITOR ───────────────────────────────────────────────────
+function compositeImage(photoCanvas, tmpl, opts={}) {
+  const {
+    eventName='Cu at the Mine 2026', showDate=true,
+    outputW=1080, outputH=1350,
+    bannerImg=null, frameIndex=0, totalFrames=1,
+  } = opts;
+
+  const out = document.createElement('canvas');
+  out.width=outputW; out.height=outputH;
+  const ctx = out.getContext('2d');
+
+  if (bannerImg) {
+    _compositeWithBanner(ctx, photoCanvas, tmpl, bannerImg, outputW, outputH, opts);
+  } else {
+    _compositeStandard(ctx, photoCanvas, tmpl, outputW, outputH, opts);
+  }
+
+  // Frame counter badge (collage/multi-shot)
+  if (totalFrames > 1) {
+    ctx.fillStyle='rgba(0,0,0,0.65)'; roundRect(ctx,outputW-94,14,78,34,8); ctx.fill();
+    ctx.font='bold 18px Oswald,sans-serif'; ctx.fillStyle=tmpl.accent;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(`${frameIndex+1} / ${totalFrames}`, outputW-55, 31);
+  }
+
+  return out;
+}
+
+// ── BANNER COMPOSITOR ─────────────────────────────────────────────────────
+function _compositeWithBanner(ctx, photo, tmpl, banner, W, H, opts) {
+  const { showDate } = opts;
+
+  // 1. Background fill
+  const bg = ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0, tmpl.g[0]); bg.addColorStop(1, tmpl.g[1]);
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  // 2. Banner at NATURAL proportions — no zoom, shows FULL WIDTH
+  // Previous version zoomed to 400px which cropped the scenic edges
+  // (crystals on left, mine tower on right, Arizona landscape)
+  const bScale  = W / banner.naturalWidth;           // scale to fit frame width
+  const bDrawH  = Math.round(banner.naturalHeight * bScale);  // natural height ~360px
+  const BANNER_Y = H - bDrawH;                       // flush at bottom
+
+  ctx.drawImage(banner, 0, BANNER_Y, W, bDrawH);
+
+  // 3. User photo — cover fit in top zone
+  const PHOTO_H = BANNER_Y + 70;  // slight overlap onto top of banner
+  const srcW = photo.width||1280, srcH = photo.height||960;
+  const sc   = Math.max(W/srcW, PHOTO_H/srcH);
+  const dW   = srcW*sc, dH = srcH*sc;
+  // Position face in upper-center rather than dead-center
+  const yOff = Math.min(0, (PHOTO_H - dH) * 0.35);
+
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0, 0, W, PHOTO_H); ctx.clip();
+  ctx.drawImage(photo, (W-dW)/2, yOff, dW, dH);
+  ctx.restore();
+
+  // 4. Vignette — darkens edges for professional depth
+  const vig = ctx.createRadialGradient(W/2, PHOTO_H*0.42, W*0.26, W/2, PHOTO_H*0.42, W*0.95);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.40)');
+  ctx.fillStyle=vig; ctx.fillRect(0, 0, W, PHOTO_H);
+
+  // 5. Smooth gradient blend at photo/banner boundary
+  const fade = ctx.createLinearGradient(0, BANNER_Y-120, 0, BANNER_Y+40);
+  fade.addColorStop(0, 'rgba(0,0,0,0)');
+  fade.addColorStop(0.6, 'rgba(0,0,0,0.18)');
+  fade.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle=fade; ctx.fillRect(0, BANNER_Y-120, W, 160);
+
+  // 6. Thin copper/gold accent line at boundary
+  ctx.globalAlpha=0.8; ctx.fillStyle=tmpl.accent;
+  ctx.fillRect(0, BANNER_Y-2, W, 3);
+  ctx.globalAlpha=1;
+
+  // 7. UA header bar at top
+  const hGrad = ctx.createLinearGradient(0,0,0,84);
+  hGrad.addColorStop(0,'rgba(0,0,0,0.80)'); hGrad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=hGrad; ctx.fillRect(0,0,W,84);
+  ctx.fillStyle='#AB0520'; ctx.fillRect(0,0,W,6);
+  ctx.font='600 20px Oswald,sans-serif'; ctx.fillStyle='rgba(255,255,255,0.88)';
+  ctx.textBaseline='middle'; ctx.textAlign='left';
+  ctx.fillText('SCHOOL OF MINING ENGINEERING & MINERAL RESOURCES', 22, 40);
+  if (showDate) {
+    ctx.font='500 17px Oswald,sans-serif'; ctx.fillStyle=tmpl.accent;
+    ctx.textAlign='right';
+    ctx.fillText(new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}), W-22, 40);
   }
 }
 

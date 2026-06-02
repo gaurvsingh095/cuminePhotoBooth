@@ -1,0 +1,17 @@
+{
+  "name": "SMEMR Photo Booth",
+  "short_name": "SMEMR Booth",
+  "description": "University of Arizona School of Mining Engineering & Mineral Resources Photo Booth",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0C234B",
+  "theme_color": "#0C234B",
+  "scope": "/",
+  "icons": [
+    { "src": "assets/logos/SMEMR.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "categories": ["photo", "utilities", "education"],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

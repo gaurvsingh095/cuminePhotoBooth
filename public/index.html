@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,maximum-scale=1.0,user-scalable=no">
+<meta name="theme-color" content="#0C234B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SMEMR Booth">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>SMEMR Photo Booth — Cu at the Mine 2026</title>
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<div id="app">
+
+<!-- ATTRACT -->
+<div id="s-attract" class="screen active" onclick="goTo('mode')">
+  <div class="attract-bg"></div>
+  <div class="hex-bg"></div>
+  <canvas id="particle-canvas" class="attract-particles"></canvas>
+  <div class="attract-inner">
+    <img src="assets/logos/SMEMR.svg" class="attract-logo" alt="SMEMR" onerror="this.style.display='none'">
+    <div class="attract-h1">Cu at the Mine<br><span class="attract-accent">2026</span></div>
+    <div class="attract-dept">Professional Development Summer Academy<br>School of Mining Engineering &amp; Mineral Resources</div>
+    <div class="attract-modes">
+      <span class="mode-chip">📷 Single</span>
+      <span class="mode-chip">🖼️ Collage</span>
+      <span class="mode-chip">🎞️ GIF</span>
+    </div>
+    <button class="attract-cta" onclick="event.stopPropagation();goTo('mode')">Tap to Start</button>
+    <div class="attract-sub">Choose a frame · Smile · Get your SMEMR photo</div>
+  </div>
+  <a href="gallery.html" class="attract-gallery-btn" onclick="event.stopPropagation()">
+    🖼 Photo Gallery <span class="gallery-count-badge" id="gallery-count-badge"></span>
+  </a>
+  <button class="fs-fab" onclick="event.stopPropagation();toggleFS()" title="Fullscreen">⛶</button>
+  <div class="admin-zone" onclick="event.stopPropagation();adminPrompt()"></div>
+</div>
+
+<!-- MODE -->
+<div id="s-mode" class="screen">
+  <div class="hdr">
+    <div class="hdr-brand">
+      <img src="assets/logos/SMEMR.svg" class="hdr-logo" alt="SMEMR" onerror="this.style.display='none'">
+      <div class="hdr-sep"></div>
+      <div class="hdr-text">
+        <div class="hdr-univ">The University of Arizona</div>
+        <div class="hdr-dept">Cu at the Mine 2026</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <button class="fs-btn" onclick="toggleFS()">⛶</button>
+      <button class="btn btn-ghost" onclick="goTo('attract')">&#8592;</button>
+    </div>
+  </div>
+  <div class="mode-section-title"><h2>Choose Your Experience</h2><p>What kind of photo do you want?</p></div>
+  <div class="mode-grid">
+    <div class="mode-card" onclick="selectMode('single',null,1)"><div class="mode-icon">📷</div><div class="mode-name">Single Photo</div><div class="mode-desc">One perfect branded shot</div></div>
+    <div class="mode-card" onclick="selectMode('collage','grid',4)"><div class="mode-icon">⊞</div><div class="mode-name">2×2 Collage</div><div class="mode-desc">4 shots in a grid</div><div class="mode-badge">New</div></div>
+    <div class="mode-card" onclick="selectMode('collage','strip',3)"><div class="mode-icon">🎞</div><div class="mode-name">Photo Strip</div><div class="mode-desc">3-shot classic strip</div></div>
+    <div class="mode-card" onclick="selectMode('collage','wide',3)"><div class="mode-icon">⬛</div><div class="mode-name">Wide Banner</div><div class="mode-desc">3 shots side by side</div></div>
+    <div class="mode-card" onclick="selectMode('gif',null,3)"><div class="mode-icon">🎬</div><div class="mode-name">Animated GIF</div><div class="mode-desc">3 frames looping</div><div class="mode-badge">New</div></div>
+    <div class="mode-card" onclick="selectMode('boomer',null,2)"><div class="mode-icon">🔄</div><div class="mode-name">Boomerang</div><div class="mode-desc">2-shot bounce loop</div><div class="mode-badge">New</div></div>
+  </div>
+</div>
+
+<!-- TEMPLATE PICKER -->
+<div id="s-gallery" class="screen">
+  <div class="hdr">
+    <div class="hdr-brand">
+      <img src="assets/logos/SMEMR.svg" class="hdr-logo" alt="SMEMR" onerror="this.style.display='none'">
+      <div class="hdr-sep"></div>
+      <div class="hdr-text">
+        <div class="hdr-univ">The University of Arizona</div>
+        <div class="hdr-dept">Choose Your Frame</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <button class="fs-btn" onclick="toggleFS()">⛶</button>
+      <button class="btn btn-ghost" onclick="goTo('mode')">&#8592;</button>
+    </div>
+  </div>
+  <div class="gal-header"><p>Tap a design, then press Select</p></div>
+  <div class="cat-bar" id="cat-bar"></div>
+  <div class="tmpl-grid" id="tmpl-grid"></div>
+  <div class="gal-footer">
+    <button class="btn btn-primary btn-lg btn-block" id="sel-btn" disabled onclick="initCamera()">Select &amp; Open Camera &rarr;</button>
+  </div>
+</div>
+
+<!-- CAMERA -->
+<div id="s-preview" class="screen">
+  <div class="hdr">
+    <div class="hdr-brand">
+      <img src="assets/logos/SMEMR.svg" class="hdr-logo" alt="SMEMR" onerror="this.style.display='none'">
+      <div class="hdr-sep"></div>
+      <div class="hdr-text">
+        <div class="hdr-univ">The University of Arizona</div>
+        <div class="hdr-dept">SMEMR Photo Booth</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <button class="btn btn-ghost" onclick="stopStream();goTo('gallery')">&#8592; Templates</button>
+    </div>
+  </div>
+  <div class="cam-wrap">
+    <video id="cam-video" autoplay playsinline muted></video>
+    <div class="cam-guides">
+      <div class="guide-c gc-tl"></div><div class="guide-c gc-tr"></div>
+      <div class="guide-c gc-bl"></div><div class="guide-c gc-br"></div>
+    </div>
+    <div class="tmpl-label-overlay" id="cam-tmpl-label">Template</div>
+    <div class="cam-hint" id="cam-hint-text">Stand in the frame — smile!</div>
+    <div class="strip-indicator" id="strip-dots"></div>
+    <div class="cd-overlay" id="cd-overlay"><div class="cd-num" id="cd-num">5</div></div>
+    <div class="flash-layer" id="flash-layer"></div>
+    <div class="cam-error" id="cam-error" style="display:none">
+      <h3>Camera Not Available</h3>
+      <p>Please allow camera access, then tap Try Again.</p>
+      <button class="btn btn-primary" onclick="initCamera()" style="margin-top:.5rem">Try Again</button>
+      <button class="btn btn-ghost" onclick="goTo('gallery')" style="margin-top:8px">&#8592; Back</button>
+    </div>
+  </div>
+  <div class="cam-controls">
+    <div class="timer-row">
+      <button class="t-btn" onclick="setTimer(3,this)">3s</button>
+      <button class="t-btn on" onclick="setTimer(5,this)">5s</button>
+      <button class="t-btn" onclick="setTimer(10,this)">10s</button>
+    </div>
+    <button class="btn btn-primary btn-lg" id="snap-btn" style="flex:1" onclick="startCountdown()">📷 Take Photo</button>
+  </div>
+</div>
+
+<!-- REVIEW -->
+<div id="s-review" class="screen">
+  <div class="hdr">
+    <div class="hdr-brand">
+      <img src="assets/logos/SMEMR.svg" class="hdr-logo" alt="SMEMR" onerror="this.style.display='none'">
+      <div class="hdr-sep"></div>
+      <div class="hdr-text"><div class="hdr-univ">The University of Arizona</div><div class="hdr-dept">Review Your Photo</div></div>
+    </div>
+  </div>
+  <div class="review-wrap"><div class="result-frame"><canvas id="result-canvas"></canvas></div></div>
+  <div class="review-actions">
+    <button class="btn btn-primary btn-lg btn-block" onclick="goTo('delivery')">✓ Use This Photo</button>
+    <div class="review-row">
+      <button class="btn btn-secondary" style="flex:1" onclick="initCamera()">↩ Retake</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="stopStream();goTo('gallery')">⊞ Templates</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="stopStream();goTo('mode')">☰ Mode</button>
+    </div>
+  </div>
+</div>
+
+<!-- COLLAGE -->
+<div id="s-collage" class="screen">
+  <div class="hdr">
+    <div class="hdr-brand">
+      <img src="assets/logos/SMEMR.svg" class="hdr-logo" alt="SMEMR" onerror="this.style.display='none'">
+      <div class="hdr-sep"></div>
+      <div class="hdr-text"><div class="hdr-univ">The University of Arizona</div><div class="hdr-dept">Your Collage</div></div>
+    </div>
+  </div>
+  <div class="collage-preview-wrap"><canvas id="collage-canvas"></canvas></div>
+  <div class="review-actions">
+    <button class="btn btn-primary btn-lg btn-block" onclick="goTo('delivery')">✓ Use This Collage</button>
+    <div class="review-row">
+      <button class="btn btn-secondary" style="flex:1" onclick="initCamera()">↩ Retake</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="stopStream();goTo('gallery')">⊞ Templates</button>
+    </div>
+  </div>
+</div>
+
+<!-- GIF -->
+<div id="s-gif" class="screen">
+  <div class="hdr">
+    <div class="hdr-brand">
+      <img src="assets/logos/SMEMR.svg" class="hdr-logo" alt="SMEMR" onerror="this.style.display='none'">
+      <div class="hdr-sep"></div>
+      <div class="hdr-text"><div class="hdr-univ">The University of Arizona</div><div class="hdr-dept">Your Animated GIF</div></div>
+    </div>
+  </div>
+  <div class="gif-wrap">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%">
+      <img id="gif-preview" src="" alt="Your GIF">
+      <div class="gif-status" id="gif-status"></div>
+    </div>
+  </div>
+  <div class="review-actions">
+    <button class="btn btn-primary btn-lg btn-block" onclick="goTo('delivery')">✓ Use This GIF</button>
+    <div class="review-row">
+      <button class="btn btn-secondary" style="flex:1" onclick="initCamera()">↩ Retake</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="stopStream();goTo('gallery')">⊞ Templates</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELIVERY -->
+<div id="s-delivery" class="screen">
+  <div class="delivery-inner">
+    <div class="check-circle">✓</div>
+    <div class="dlv-h1">Photo Ready!</div>
+    <div class="preview-thumb-wrap"><img id="delivery-thumb" src="" alt="Your photo"></div>
+    <a id="download-link" class="download-btn" download="SMEMR-Photo.jpg">⬇ Download Full-Res Photo</a>
+    <div class="gallery-save-notice">✓ Added to shared Photo Gallery</div>
+    <div class="email-row">
+      <input class="input" id="email-inp" type="email" placeholder="your@email.com" style="flex:1">
+      <button class="btn btn-secondary" onclick="sendEmail()">Send</button>
+    </div>
+    <div class="privacy">Email used only to send your photo. Not stored.</div>
+    <div style="display:flex;gap:8px;width:100%">
+      <a href="gallery.html" class="btn btn-ghost" style="flex:1;text-decoration:none;text-align:center">🖼 View Gallery</a>
+      <button class="btn btn-ghost" style="flex:1" onclick="resetBooth()">Start Over</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<div id="processing">
+  <div class="proc-ring"></div>
+  <div class="proc-text">Processing…</div>
+  <div class="proc-sub"></div>
+  <div class="proc-bar-wrap"><div class="proc-bar" id="proc-bar"></div></div>
+</div>
+
+<div id="pwa-prompt" class="pwa-prompt" style="display:none">
+  <div class="pwa-prompt-text"><strong>Install SMEMR Booth</strong>Add to home screen</div>
+  <button class="pwa-install-btn" id="pwa-install-btn">Install</button>
+  <button onclick="this.closest('#pwa-prompt').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:18px;padding:4px">✕</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/gallery-store.js"></script>
+<script src="js/app.js"></script>
+<script>
+function toggleFS(){const e=document.documentElement;if(!document.fullscreenElement&&!document.webkitFullscreenElement)(e.requestFullscreen||e.webkitRequestFullscreen||function(){}).call(e).catch(()=>{});else(document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document);}
+['fullscreenchange','webkitfullscreenchange'].forEach(e=>document.addEventListener(e,()=>{const f=!!(document.fullscreenElement||document.webkitFullscreenElement);document.querySelectorAll('.fs-btn,.fs-fab').forEach(b=>b.textContent=f?'⤡':'⛶');}));
+document.getElementById('s-attract').addEventListener('click',function(){toggleFS();},{once:true});
+(function(){const c=document.getElementById('particle-canvas');if(!c)return;const ctx=c.getContext('2d');const pts=Array.from({length:35},()=>({x:Math.random(),y:Math.random()+.3,vx:(Math.random()-.5)*.0003,vy:-Math.random()*.0004-.0001,r:Math.random()*2+.4,a:Math.random()*.45+.1}));function resize(){c.width=c.offsetWidth;c.height=c.offsetHeight;}resize();window.addEventListener('resize',resize,{passive:true});(function f(){ctx.clearRect(0,0,c.width,c.height);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.y<-.05){p.y=1.05;p.x=Math.random();}if(p.x<0)p.x=1;if(p.x>1)p.x=0;ctx.globalAlpha=p.a;ctx.fillStyle='#C49A1B';ctx.beginPath();ctx.arc(p.x*c.width,p.y*c.height,p.r,0,Math.PI*2);ctx.fill();});ctx.globalAlpha=1;requestAnimationFrame(f);})();})();
+let _di=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();_di=e;setTimeout(()=>{document.getElementById('pwa-prompt').style.display='flex';},4000);});
+document.getElementById('pwa-install-btn').addEventListener('click',async()=>{if(!_di)return;_di.prompt();await _di.userChoice;_di=null;document.getElementById('pwa-prompt').style.display='none';});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+</script>
+</body>
+</html>

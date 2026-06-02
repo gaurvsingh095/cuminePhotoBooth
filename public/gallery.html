@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#0C234B">
+<title>Photo Gallery — Cu at the Mine 2026 · SMEMR</title>
+<link rel="stylesheet" href="css/main.css">
+<style>
+#app { background: #05060f; overflow-y: auto; }
+
+.hero {
+  background: linear-gradient(140deg,#0C234B 0%,#1e0a00 55%,#2d1400 100%);
+  padding: clamp(1.5rem,4vh,3rem) var(--px);
+  text-align: center; flex-shrink: 0;
+  border-bottom: 3px solid #AB0520;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content:'Cu'; position:absolute; right:-10px; top:-30px;
+  font-size:clamp(120px,25vw,220px); font-weight:800;
+  color:rgba(196,154,27,0.06); pointer-events:none;
+  font-family:'Oswald',sans-serif; line-height:1;
+}
+.hero-logo { height: clamp(28px,5vw,46px); margin-bottom: .75rem; display: block; margin-left: auto; margin-right: auto; }
+.hero-title { font-family:var(--font-h); font-size:clamp(22px,5vw,44px); font-weight:700; color:#fff; line-height:1.1; }
+.hero-gold  { color: var(--gold); }
+.hero-sub   { font-family:var(--font-h); font-size:clamp(11px,2vw,16px); color:rgba(255,255,255,.5); margin-top:4px; }
+.hero-chips { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:.75rem; }
+.hero-chip  { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14); border-radius:20px; padding:4px 14px; font-size:clamp(10px,1.8vw,12px); font-weight:600; color:rgba(255,255,255,.6); text-decoration:none; }
+.hero-chip.gold { border-color:rgba(196,154,27,.4); color:var(--gold); }
+
+.toolbar { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px var(--px); background:rgba(0,0,0,.35); border-bottom:1px solid rgba(255,255,255,.07); flex-shrink:0; flex-wrap:wrap; }
+.toolbar h2 { font-family:var(--font-h); font-size:var(--fs-xl); font-weight:600; color:#fff; }
+.toolbar p  { font-size:var(--fs-xs); color:rgba(255,255,255,.35); margin-top:1px; }
+.toolbar-right { display:flex; gap:8px; align-items:center; }
+
+.pgrid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(clamp(150px,28vw,220px),1fr));
+  gap:clamp(10px,2vw,16px);
+  padding:var(--px); flex:1; align-content:start;
+}
+.pcard { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.10); border-radius:10px; overflow:hidden; transition:all .2s; }
+.pcard:hover { border-color:rgba(255,255,255,.22); transform:translateY(-3px); box-shadow:0 10px 36px rgba(0,0,0,.45); }
+.pcard-img { aspect-ratio:3/4; position:relative; overflow:hidden; background:rgba(255,255,255,.03); }
+.pcard-img img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .3s; }
+.pcard:hover .pcard-img img { transform:scale(1.04); }
+.pcard-hover { position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;opacity:0;transition:all .2s; }
+.pcard:hover .pcard-hover { background:rgba(0,0,0,.42);opacity:1; }
+.dl-fab { width:54px;height:54px;border-radius:50%;background:var(--red);border:none;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(171,5,32,.6);transform:scale(.82);transition:transform .18s; }
+.pcard:hover .dl-fab { transform:scale(1); }
+.pcard-info { padding:9px 11px 5px; }
+.pcard-name { font-family:var(--font-h);font-size:var(--fs-sm);font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.pcard-meta { font-size:var(--fs-xs);color:rgba(255,255,255,.38);margin-top:2px; }
+.pcard-foot { display:flex;border-top:1px solid rgba(255,255,255,.07); }
+.pcard-dl   { flex:1;padding:10px;text-align:center;background:var(--red);color:#fff;font-family:var(--font-h);font-size:var(--fs-sm);font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:none;cursor:pointer;transition:background .18s; }
+.pcard-dl:hover { background:var(--red-dk); }
+.pcard-del  { width:40px;border:none;background:rgba(255,255,255,.06);color:rgba(255,80,80,.7);font-size:15px;cursor:pointer;display:none; }
+.pcard-del.show { display:block; }
+.pcard-del:hover { background:rgba(255,50,50,.15); color:#f77; }
+
+.state { flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:3rem;text-align:center; }
+.spin { width:48px;height:48px;border-radius:50%;border:3px solid rgba(255,255,255,.1);border-top-color:var(--gold);animation:spin 1s linear infinite; }
+.state h3 { font-family:var(--font-h);font-size:var(--fs-2xl);color:rgba(255,255,255,.55);font-weight:600; }
+.state p  { font-size:var(--fs-sm);color:rgba(255,255,255,.3); }
+
+.load-more { display:block;margin:0 auto clamp(1.5rem,3vh,2rem);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.65);font-size:var(--fs-base);font-weight:600;padding:11px 32px;border-radius:6px;cursor:pointer;transition:all .18s; }
+.load-more:hover { background:rgba(255,255,255,.14);color:#fff; }
+
+.pgallery-footer { text-align:center;padding:2rem var(--px);border-top:1px solid rgba(255,255,255,.07);flex-shrink:0; }
+.pgallery-footer img { height:24px;opacity:.4;margin-bottom:6px; }
+.pgallery-footer p { font-size:var(--fs-xs);color:rgba(255,255,255,.28);line-height:1.7; }
+.pgallery-footer a { color:var(--gold);text-decoration:none; }
+
+.admin-bar { display:none;align-items:center;gap:10px;flex-wrap:wrap;background:rgba(171,5,32,.15);border:1px solid rgba(171,5,32,.3);border-radius:8px;padding:9px 14px;margin:10px var(--px) 0; }
+.admin-bar.show { display:flex; }
+.admin-bar span { flex:1;font-size:var(--fs-xs);color:rgba(255,120,120,.8);font-weight:600; }
+
+@media(min-width:768px) { .pgrid { grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); } }
+@media(min-width:1200px) { .pgrid { grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); } }
+</style>
+</head>
+<body>
+<div id="app">
+
+<div class="hero">
+  <img src="assets/logos/SMEMR.svg" class="hero-logo" alt="SMEMR" onerror="this.style.display='none'">
+  <div class="hero-title"><span class="hero-gold">Cu at the Mine 2026</span><br>Photo Gallery</div>
+  <div class="hero-sub">School of Mining Engineering &amp; Mineral Resources · The University of Arizona</div>
+  <div class="hero-chips">
+    <span class="hero-chip gold">⛏ Professional Development Summer Academy</span>
+    <span class="hero-chip" id="hero-count">Loading…</span>
+    <a href="https://mining.arizona.edu/" target="_blank" class="hero-chip">mining.arizona.edu ↗</a>
+  </div>
+</div>
+
+<div class="admin-bar" id="admin-bar">
+  <span>🔒 Admin mode — delete buttons visible</span>
+  <button class="btn btn-ghost" style="font-size:var(--fs-xs);padding:5px 12px" onclick="clearAll()">🗑 Clear All</button>
+  <button class="btn btn-ghost" style="font-size:var(--fs-xs);padding:5px 12px" onclick="exitAdmin()">Exit Admin</button>
+</div>
+
+<div class="toolbar">
+  <div>
+    <h2 id="photo-count">Photos</h2>
+    <p id="gallery-status">Loading…</p>
+  </div>
+  <div class="toolbar-right">
+    <button class="btn btn-ghost" style="font-size:var(--fs-sm);padding:7px 12px" onclick="load(true)">⟳ Refresh</button>
+    <button class="btn btn-ghost" style="font-size:var(--fs-sm);padding:7px 12px" title="Admin" onclick="promptAdmin()">🔒</button>
+    <a href="index.html" class="btn btn-primary" style="font-size:var(--fs-sm);padding:8px 16px;text-decoration:none">📷 Take a Photo</a>
+  </div>
+</div>
+
+<div class="state" id="state-loading"><div class="spin"></div><p>Loading gallery…</p></div>
+<div class="state" id="state-empty" style="display:none">
+  <div style="font-size:52px">📷</div>
+  <h3>No Photos Yet</h3>
+  <p>Photos appear here right after they're taken at the booth.</p>
+  <a href="index.html" class="btn btn-primary" style="text-decoration:none;margin-top:8px">Take the First Photo</a>
+</div>
+
+<div class="pgrid" id="pgrid" style="display:none"></div>
+<button class="load-more" id="load-more" style="display:none" onclick="loadMore()">Load More ↓</button>
+
+<div class="pgallery-footer">
+  <img src="assets/logos/SMEMR.svg" alt="SMEMR" onerror="this.style.display='none'">
+  <p>
+    School of Mining Engineering &amp; Mineral Resources · The University of Arizona<br>
+    1235 E. James E. Rogers Way · Tucson, AZ 85721 · 520.621.6063<br>
+    <a href="https://mining.arizona.edu/" target="_blank">mining.arizona.edu</a>
+    &nbsp;·&nbsp;
+    <a href="mailto:engr-mining@arizona.edu">engr-mining@arizona.edu</a>
+  </p>
+</div>
+
+</div>
+
+<script src="js/gallery-store.js"></script>
+<script>
+'use strict';
+// ── State ──────────────────────────────────────────────────────────────────
+let _photos = [];  // local cache for downloads
+let _page = 0, _perPage = 24, _allLoaded = false;
+let _adminPwd = sessionStorage.getItem('smemr_admin') || '';
+let _isAdmin  = !!_adminPwd;
+
+function promptAdmin() {
+  const p = prompt('Enter admin password:');
+  if (!p) return;
+  _adminPwd = p; _isAdmin = true;
+  sessionStorage.setItem('smemr_admin', p);
+  document.getElementById('admin-bar').classList.add('show');
+  document.querySelectorAll('.pcard-del').forEach(b => b.classList.add('show'));
+  alert('Admin mode on. Delete buttons visible.');
+}
+function exitAdmin() {
+  _isAdmin = false; _adminPwd = '';
+  sessionStorage.removeItem('smemr_admin');
+  document.getElementById('admin-bar').classList.remove('show');
+  document.querySelectorAll('.pcard-del').forEach(b => b.classList.remove('show'));
+}
+
+// ── Load gallery ───────────────────────────────────────────────────────────
+async function load(reset) {
+  if (reset) { _page = 0; _allLoaded = false; document.getElementById('pgrid').innerHTML = ''; _photos = []; }
+  document.getElementById('state-loading').style.display = 'flex';
+  document.getElementById('state-empty').style.display = 'none';
+  document.getElementById('pgrid').style.display = 'none';
+  document.getElementById('load-more').style.display = 'none';
+
+  try {
+    // GalleryStore.getAll() uses API if available, IndexedDB if not
+    const all = await GalleryStore.getAll();
+    _photos = all; // cache for downloads
+    const total = all.length;
+
+    document.getElementById('state-loading').style.display = 'none';
+
+    if (!total) {
+      document.getElementById('state-empty').style.display = 'flex';
+      document.getElementById('photo-count').textContent = '0 photos';
+      document.getElementById('gallery-status').textContent = 'No photos taken yet';
+      document.getElementById('hero-count').textContent = '0 photos';
+      return;
+    }
+
+    document.getElementById('photo-count').textContent = total + ' photo' + (total !== 1 ? 's' : '');
+    document.getElementById('gallery-status').textContent = '🌐 Shared gallery · auto-refreshes every 30s';
+    document.getElementById('hero-count').textContent = total + ' photo' + (total !== 1 ? 's' : '');
+
+    const slice = all.slice(_page * _perPage, (_page + 1) * _perPage);
+    _allLoaded = (_page + 1) * _perPage >= total;
+
+    const grid = document.getElementById('pgrid');
+    grid.style.display = 'grid';
+
+    slice.forEach((p, i) => {
+      const card = document.createElement('div');
+      card.className = 'pcard';
+      card.style.animationDelay = (i % _perPage * 0.04) + 's';
+      card.dataset.id = p.id;
+      const name = (p.templateName || 'SMEMR Photo').replace(/'/g, '&#39;');
+      card.innerHTML =
+        '<div class="pcard-img">' +
+          '<img src="' + (p.thumbnail || '') + '" alt="' + name + '" loading="lazy">' +
+          '<div class="pcard-hover"><button class="dl-fab" onclick="dlPhoto(\'' + p.id + '\',\'' + name + '\',this)" title="Download">⬇</button></div>' +
+        '</div>' +
+        '<div class="pcard-info"><div class="pcard-name">' + (p.templateName || 'SMEMR Photo') + '</div><div class="pcard-meta">' + (p.dateStr || '') + ' · ' + (p.eventName || '') + '</div></div>' +
+        '<div class="pcard-foot">' +
+          '<button class="pcard-dl" onclick="dlPhoto(\'' + p.id + '\',\'' + name + '\',this)">⬇ Download</button>' +
+          '<button class="pcard-del' + (_isAdmin ? ' show' : '') + '" onclick="delPhoto(\'' + p.id + '\',this)" title="Delete">✕</button>' +
+        '</div>';
+      grid.appendChild(card);
+    });
+
+    if (!_allLoaded) document.getElementById('load-more').style.display = 'block';
+    if (_isAdmin) document.getElementById('admin-bar').classList.add('show');
+
+  } catch(e) {
+    document.getElementById('state-loading').style.display = 'none';
+    document.getElementById('photo-count').textContent = 'Error loading gallery';
+    document.getElementById('gallery-status').textContent = e.message;
+  }
+}
+
+function loadMore() { _page++; load(false); document.getElementById('load-more').style.display = _allLoaded ? 'none' : 'block'; }
+
+// ── Download ───────────────────────────────────────────────────────────────
+async function dlPhoto(id, name, btn) {
+  const orig = btn.textContent; btn.textContent = '⏳'; btn.disabled = true;
+  try {
+    // Find in local cache first (fastest, always works)
+    let photo = _photos.find(p => p.id === id);
+    // Fall back to GalleryStore.get if not in cache
+    if (!photo) photo = await GalleryStore.get(id);
+
+    const src = photo?.thumbnail;
+    if (!src) throw new Error('Photo not found');
+
+    // Convert data URL → Blob → download (works for any size, all browsers)
+    const res  = await fetch(src);
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = 'SMEMR-CuAtTheMine2026-' + name.replace(/[^a-z0-9]/gi, '-') + '.jpg';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  } catch(e) {
+    alert('Download failed: ' + e.message);
+  } finally { btn.textContent = orig; btn.disabled = false; }
+}
+
+// ── Admin delete ───────────────────────────────────────────────────────────
+async function delPhoto(id, btn) {
+  if (!_adminPwd) { promptAdmin(); return; }
+  if (!confirm('Delete this photo? Cannot be undone.')) return;
+  btn.textContent = '…'; btn.disabled = true;
+  await GalleryStore.delete(id, _adminPwd);
+  btn.closest('.pcard').remove();
+  _photos = _photos.filter(p => p.id !== id);
+  const n = parseInt(document.getElementById('photo-count').textContent) - 1;
+  document.getElementById('photo-count').textContent = n + ' photo' + (n !== 1 ? 's' : '');
+  document.getElementById('hero-count').textContent = document.getElementById('photo-count').textContent;
+  if (!document.querySelectorAll('.pcard').length) {
+    document.getElementById('pgrid').style.display = 'none';
+    document.getElementById('state-empty').style.display = 'flex';
+  }
+}
+
+async function clearAll() {
+  if (!_adminPwd) { promptAdmin(); return; }
+  if (!confirm('Delete ALL photos? This cannot be undone.')) return;
+  await GalleryStore.clearAll(_adminPwd);
+  load(true);
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  load(true);
+  // Auto-refresh every 30s
+  setInterval(() => { if (document.visibilityState === 'visible') load(true); }, 30000);
+});
+</script>
+</body>
+</html>

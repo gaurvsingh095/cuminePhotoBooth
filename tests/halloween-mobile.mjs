@@ -6,7 +6,7 @@ try {
  browser=await chromium.launch({headless:true,args:['--no-sandbox','--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream','--use-gl=angle','--use-angle=swiftshader']});
  const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true,acceptDownloads:true,permissions:['camera']});
  const page=await context.newPage();
- const response=await page.goto('http://127.0.0.1:8765/halloween.html',{waitUntil:'domcontentloaded'});
+ const response=await page.goto('http://127.0.0.1:8765/classic-halloween.html',{waitUntil:'domcontentloaded'});
  assert.equal(response.status(),200);
  assert.equal(await page.locator('#capture').isVisible(),false,'Capture must be hidden until camera is ready');
  console.log('Mobile 1/4 Initial controls correct');

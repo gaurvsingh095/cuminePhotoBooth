@@ -1,10 +1,10 @@
 name: Halloween booth browser smoke test
 on:
   push:
-    branches: [feature/cumine-halloween-2026, feature/halloween-cinematic-frames]
+    branches: [feature/cumine-halloween-2026, feature/halloween-cinematic-frames, feature/smemr-guided-booth-wall]
   pull_request:
     branches: [main]
-    paths: [public/halloween.html, public/js/halloween.js, public/js/halloween-pose.js, public/js/halloween-frames.js, public/css/halloween.css, vercel.json, tests/**, .github/workflows/halloween-smoke.yml]
+    paths: [public/**, api/wall.js, vercel.json, tests/**, .github/workflows/halloween-smoke.yml]
 jobs:
   portrait:
     runs-on: ubuntu-24.04
@@ -29,6 +29,8 @@ jobs:
         run: node tests/halloween-manual.mjs
       - name: Test cinematic Halloween frames and sharing
         run: node tests/halloween-frames.mjs
+      - name: Test guided SMEMR booth and photo wall
+        run: node tests/booth-wizard.mjs
       - name: Upload screenshots on failure
         if: failure()
         uses: actions/upload-artifact@v4

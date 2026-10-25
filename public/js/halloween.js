@@ -2,8 +2,9 @@
 /* SMEMR Halloween Skeleton Studio | isolated seasonal experience.
    Runs face detection on the visitor's device; never uploads photos. */
 import {drawPoseSkeleton,matchPoses,facesFromPose,poseUsable} from './halloween-pose.js';
+import {drawAugmentedFrame,FRAMES,CAPTIONS} from './halloween-frames.js';
 const $=id=>document.getElementById(id);
-const W=1200,H=1500, state={scene:'shaft',source:null,faces:[],poses:[],manual:false,camera:null,detector:null,landmarker:null,loading:null,poseLoading:null,faceFit:100,poseEnabled:true};
+const W=1200,H=1500, state={scene:'shaft',style:'skeleton',frameTheme:'copper',frameFilter:'cinema',caption:'crew',accessory:'none',strength:65,source:null,faces:[],poses:[],manual:false,camera:null,detector:null,landmarker:null,loading:null,poseLoading:null,faceFit:100,poseEnabled:true};
 const poster=$('poster'),ctx=poster.getContext('2d'),source=document.createElement('canvas');
 let lastStatus='';
 let photoGeneration=0;
@@ -15,6 +16,46 @@ const random=(seed)=>{let v=Math.sin(seed*127.1+32.09)*43758.5453;return v-Math.
 function init(){
   poster.width=W;poster.height=H;renderPoster();
   document.querySelectorAll('.choice').forEach(el=>el.addEventListener('click',()=>{state.scene=el.dataset.scene;document.querySelectorAll('.choice').forEach(b=>{b.classList.toggle('selected',b===el);b.setAttribute('aria-pressed',String(b===el))});renderPoster()}));
+  document.querySelectorAll('[data-style]').forEach(el=>el.addEventListener('click',()=>{
+    if(state.style===el.dataset.style)return;
+    state.style=el.dataset.style;photoGeneration++;finishProcessing();
+    updateExperienceUI();renderPoster();
+    if(state.source&&state.style==='frame'&&!state.faces.length)void detectFrameFaces(photoGeneration);
+    if(state.source&&state.style==='skeleton'&&!state.faces.length){
+      const copy=document.createElement('canvas');copy.width=source.width;copy.height=source.height;
+      copy.getContext('2d').drawImage(source,0,0);void usePhoto(copy);
+    }
+  }));
+  document.querySelectorAll('[data-frame]').forEach(el=>el.addEventListener('click',()=>{
+    state.frameTheme=el.dataset.frame;updateExperienceUI();renderPoster()
+  }));
+  ['frame-filter','caption','accessory'].forEach(id=>$(id).addEventListener('change',event=>{
+    const k={'frame-filter':'frameFilter',caption:'caption',accessory:'accessory'}[id];
+    state[k]=event.target.value;renderPoster();
+    if(id==='accessory'&&state.accessory!=='none'&&state.source&&!state.faces.length)void detectFrameFaces(photoGeneration);
+  }));
+  $('strength').addEventListener('input',event=>{
+    state.strength=Number(event.target.value);$('strength-value').textContent=state.strength+'%';renderPoster()
+  });
+  $('surprise').addEventListener('click',()=>{
+    if(state.style==='frame'){
+      state.frameTheme=FRAMES[Math.floor(Math.random()*FRAMES.length)].id;
+      const filters=['cinema','natural','copper','moon'];state.frameFilter=filters[Math.floor(Math.random()*filters.length)];
+      state.caption=CAPTIONS[Math.floor(Math.random()*CAPTIONS.length)].id;
+      const accessories=['none','helmet','witch','horns','glow'];
+      state.accessory=accessories[Math.floor(Math.random()*accessories.length)];
+      state.strength=45+Math.floor(Math.random()*12)*5;
+      ['frame-filter','caption','accessory'].forEach(id=>$(id).value=state[{'frame-filter':'frameFilter',caption:'caption',accessory:'accessory'}[id]]);
+      $('strength').value=state.strength;$('strength-value').textContent=state.strength+'%';
+      if(state.source&&state.accessory!=='none'&&!state.faces.length)void detectFrameFaces(photoGeneration);
+    }else{
+      const scenes=['shaft','crypt','moon','pumpkin'];
+      state.scene=scenes[Math.floor(Math.random()*scenes.length)];
+    }
+    updateExperienceUI();renderPoster();
+    if(state.source)setStatus('Surprise! Your haunted look has changed.','success');
+  });
+  $('share').addEventListener('click',sharePoster);
   $('camera-start').addEventListener('click',startCamera);
   $('capture').addEventListener('click',capturePhoto);
   $('upload-btn').addEventListener('click',()=>$('upload').click());
@@ -43,6 +84,7 @@ function init(){
   });
   ['manual-x','manual-y','manual-size'].forEach(id=>$(id).addEventListener('input',drawManual));
   $('manual-canvas').addEventListener('click',e=>{const box=e.currentTarget.getBoundingClientRect();const x=clamp((e.clientX-box.left)/box.width,0,1),y=clamp((e.clientY-box.top)/box.height,0,1);$('manual-x').value=Math.round(x*100);$('manual-y').value=Math.round(y*100);drawManual()});
+  updateExperienceUI();
   window.addEventListener('pagehide',()=>{photoGeneration++;stopCamera()});
 }
 function loadImage(file){return new Promise((res,rej)=>{const url=URL.createObjectURL(file),i=new Image();i.onload=()=>{URL.revokeObjectURL(url);res(i)};i.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('Image load'))};i.src=url})}
@@ -73,6 +115,11 @@ async function usePhoto(c){
   source.width=c.width;source.height=c.height;source.getContext('2d').drawImage(c,0,0);
   state.source=source;state.faces=[];state.poses=[];state.manual=false;
   $('download').disabled=true;$('manual').disabled=false;renderPoster();
+  if(state.style==='frame'){
+    renderPoster();finishProcessing();
+    setStatus('Ready: cinematic Halloween frame created. Choose a style or download now.','success');
+    void detectFrameFaces(job);return;
+  }
   setStatus('Detecting faces locally. First use can take several seconds…');
   $('busy').classList.add('busy');$('busy').textContent='Processing';
   try{
@@ -111,6 +158,41 @@ async function usePhoto(c){
   }finally{
     if(job===photoGeneration)finishProcessing();
   }
+}
+async function detectFrameFaces(job){
+  if(!state.source||job!==photoGeneration||state.style!=='frame')return;
+  try{
+    const detector=await getDetector();
+    if(job!==photoGeneration||state.style!=='frame')return;
+    const detection=detector.detect(source);
+    const faces=(detection?.detections||[]).map(d=>d.boundingBox).filter(Boolean).map(b=>({
+      x:(b.originX+b.width/2)/source.width,y:(b.originY+b.height/2)/source.height,
+      w:b.width/source.width,h:b.height/source.height
+    })).filter(f=>f.w>.025&&f.h>.025).sort((a,b)=>a.x-b.x).slice(0,3);
+    if(job!==photoGeneration||state.style!=='frame'||state.manual)return;
+    if(faces.length){state.faces=faces;renderPoster()}
+  }catch(e){console.info('Optional face accessories: manual placement is available.')}
+}
+function updateExperienceUI(){
+  document.querySelectorAll('[data-style]').forEach(button=>{
+    const active=button.dataset.style===state.style;
+    button.classList.toggle('selected',active);button.setAttribute('aria-pressed',String(active));
+  });
+  document.querySelectorAll('[data-frame]').forEach(button=>{
+    const active=button.dataset.frame===state.frameTheme;
+    button.classList.toggle('selected',active);button.setAttribute('aria-pressed',String(active));
+  });
+  document.querySelectorAll('.choice[data-scene]').forEach(button=>{
+    const active=button.dataset.scene===state.scene;
+    button.classList.toggle('selected',active);button.setAttribute('aria-pressed',String(active));
+  });
+  $('skeleton-scenes').hidden=state.style!=='skeleton';
+  $('frame-scenes').hidden=state.style!=='frame';
+  $('pose-controls').hidden=state.style!=='skeleton';
+  $('finish-title').textContent=state.style==='frame'?'Polish & save the look.':'Your face. Their bones.';
+  $('finish-help').textContent=state.style==='frame'?
+    'Fine-tune face accessory positions if needed, then download or share your original-photo souvenir.':
+    'Your real face is preserved. Pose matching falls back to a standing skeleton when needed.';
 }
 const MEDIAPIPE_VERSION='0.10.35';
 const MEDIAPIPE_CDN='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@'+MEDIAPIPE_VERSION;
@@ -199,9 +281,31 @@ function drawManual(){
   state.faces.forEach((f,i)=>{if(String(i)===$('manual-person').value)return;x.strokeStyle='#81d8ef';x.lineWidth=Math.max(3,c.width*.004);x.beginPath();x.ellipse(f.x*c.width,f.y*c.height,f.w*c.width*.68,f.h*c.height*.66,0,0,Math.PI*2);x.stroke()});
   x.strokeStyle='#f5bd7e';x.lineWidth=Math.max(3,c.width*.005);x.setLineDash([15,9]);x.beginPath();x.ellipse(cx,cy,w*.68,w*.82,0,0,Math.PI*2);x.stroke();x.setLineDash([]);
 }
-function downloadPoster(){
-  if(!state.faces.length)return;
-  poster.toBlob(blob=>{if(!blob){setStatus('Image export failed. Please retry.','error');return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='SMEMR-Halloween-Skeleton-'+Date.now()+'.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)},'image/png');
+function posterFileName(){
+  return 'SMEMR-Halloween-'+(state.style==='frame'?state.frameTheme:'Skeleton-Crew')+'-'+Date.now()+'.png';
+}
+function posterBlob(){
+  return new Promise((resolve,reject)=>poster.toBlob(blob=>blob?resolve(blob):reject(new Error('PNG export unavailable')),'image/png'));
+}
+async function downloadPoster(){
+  if(!state.source||(state.style==='skeleton'&&!state.faces.length))return;
+  try{
+    const blob=await posterBlob(),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=posterFileName();document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }catch(e){setStatus('Image export failed. Try another browser or photo.','error')}
+}
+async function sharePoster(){
+  if(!state.source||(state.style==='skeleton'&&!state.faces.length))return;
+  try{
+    const blob=await posterBlob(),file=new File([blob],posterFileName(),{type:'image/png'});
+    if(navigator.share&&navigator.canShare?.({files:[file]})){
+      await navigator.share({files:[file],title:'SMEMR Halloween photo'});
+    }else{
+      await downloadPoster();
+      setStatus('Your poster was downloaded. Share it from your device downloads.','success');
+    }
+  }catch(e){if(e?.name!=='AbortError')setStatus('Sharing unavailable. Use Download instead.','error')}
 }
 function background(){
   const g=ctx.createLinearGradient(0,0,W,H);
@@ -330,6 +434,20 @@ function makeFaceCutout(b){
   p.globalCompositeOperation='source-over';return c;
 }
 function renderPoster(){
+  if(state.style==='frame'){
+    ctx.clearRect(0,0,W,H);
+    if(state.source)drawAugmentedFrame(ctx,source,{
+      theme:state.frameTheme,filter:state.frameFilter,intensity:state.strength,
+      caption:state.caption,faces:state.faces,accessoryKind:state.accessory
+    });
+    else{
+      ctx.fillStyle='#0b1522';ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#dcb686';ctx.textAlign='center';
+      ctx.font='bold 64px Impact,Arial,sans-serif';ctx.fillText('YOUR HAUNTED FRAME',600,560);
+      ctx.font='28px Arial,sans-serif';ctx.fillText('OPEN THE CAMERA OR UPLOAD A PHOTO',600,650);
+    }
+    syncExport();return;
+  }
   background();
   // Header and floor text are part of the downloaded image.
   ctx.fillStyle='#0c234b';ctx.fillRect(0,0,W,13);ctx.fillStyle='#ab0520';ctx.fillRect(0,0,270,13);
@@ -349,7 +467,12 @@ function renderPoster(){
   ctx.strokeStyle='#c09367';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(95,1370);ctx.lineTo(1105,1370);ctx.stroke();
   ctx.fillStyle='#f2dbb8';ctx.font='700 35px "Barlow Condensed",Impact,sans-serif';ctx.fillText('SKELETON CREW  •  HALLOWEEN 2026',600,1420);
   ctx.fillStyle='#a0b1bd';ctx.font='500 20px "DM Sans",sans-serif';ctx.fillText('School of Mining Engineering & Mineral Resources',600,1460);
-  $('download').disabled=!state.faces.length;
-  $('download-duplicate').disabled=!state.faces.length;
+  syncExport();
+}
+function syncExport(){
+  const available=!!state.source&&(state.style==='frame'||state.faces.length>0);
+  $('download').disabled=!available;
+  $('download-duplicate').disabled=!available;
+  $('share').disabled=!available;
 }
 document.addEventListener('DOMContentLoaded',init);

@@ -1,6 +1,6 @@
 /** SMEMR Photo Booth offline shell. Never cache gallery APIs or user data. */
-const CACHE='smemr-booth-v5-cinematic';
-const PRECACHE=['/','/index.html','/halloween.html','/manifest.json','/css/main.css','/css/halloween.css','/js/templates.js','/js/app.js','/js/halloween.js','/js/halloween-pose.js','/js/halloween-frames.js','/js/gallery-store.js','/assets/logos/SMEMR.svg'];
+const CACHE='smemr-booth-v6-guided';
+const PRECACHE=['/','/index.html','/halloween.html','/manifest.json','/css/main.css','/css/halloween.css','/css/booth-wizard.css','/js/templates.js','/js/app.js','/js/halloween.js','/js/halloween-pose.js','/js/halloween-frames.js','/js/booth-wizard.js','/js/wall-store.js','/js/gallery-store.js','/assets/logos/SMEMR.svg'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>Promise.allSettled(PRECACHE.map(url=>cache.add(url)))).then(()=>self.skipWaiting()));
 });

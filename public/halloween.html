@@ -4,59 +4,80 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#09111c">
-<meta name="description" content="SMEMR Halloween Skeleton Studio — turn your photo into a spooky skeleton crew portrait, right in your browser.">
-<title>Halloween Skeleton Studio — SMEMR | University of Arizona</title>
+<meta name="description" content="SMEMR Photo Booth: one guided camera experience, Halloween augmented frames, Skeleton Crew portraits and a collaborative photo wall.">
+<title>SMEMR Photo Booth | School of Mining Engineering &amp; Mineral Resources</title>
 <link rel="stylesheet" href="css/halloween.css">
+<link rel="stylesheet" href="css/booth-wizard.css">
 <script type="module" src="js/halloween.js"></script>
+<script type="module" src="js/booth-wizard.js"></script>
 </head>
 <body>
 <div class="topline"></div>
 <header class="site-header">
- <a class="brand" href="index.html" aria-label="Return to SMEMR photo booth">
+ <a class="brand" href="#start" aria-label="SMEMR Photo Booth home">
   <img src="assets/logos/SMEMR.svg" alt="SMEMR">
-  <span class="divider"></span><span class="brand-sub">Halloween<br>Field Station</span>
+  <span class="divider"></span><span class="brand-sub">SMEMR<br>Photo Booth</span>
  </a>
- <a class="header-link" href="index.html">← Original photo booth</a>
+ <nav class="top-nav" aria-label="Photo booth navigation"><a class="header-link" href="#start">Create a photo</a><a class="header-link" href="#wall">Virtual wall</a><a class="header-link legacy-link" href="classic.html">Classic Booth</a></nav>
 </header>
 <main class="shell">
  <section class="intro" aria-label="Introduction">
   <div>
-    <div class="eyebrow">SMEMR seasonal photo experience</div>
-    <h1>Skeleton Crew <em>&amp; Haunted Frames.</em></h1>
-    <p>Two ways to get spooky: join the Skeleton Crew, or keep your actual photo inside cinematic Halloween frames. Capture, customize, surprise your friends, and download a souvenir.</p>
+    <div class="eyebrow">University of Arizona · School of Mining Engineering &amp; Mineral Resources</div>
+    <h1>SMEMR <em>Photo Booth.</em></h1>
+    <p>One photo. Your look. A whole wall of memories. Start your camera, align your face, choose a Halloween frame or Skeleton Crew costume, then keep your creation or add it to our shared event wall.</p>
   </div>
-  <div class="tagline">HALLOWEEN 2026 &nbsp; • &nbsp; MADE FOR THE MINE</div>
+  <div class="tagline">SMEMR &nbsp; • &nbsp; UNIVERSITY OF ARIZONA</div>
  </section>
- <div class="workspace">
+ <nav id="start" class="flow-steps" aria-label="Photo booth progress">
+  <button type="button" class="flow-step active" data-go="1" aria-current="step"><b>01</b><span>Take photo</span></button>
+  <span class="flow-arrow">→</span>
+  <button type="button" class="flow-step" data-go="2" disabled><b>02</b><span>Align faces</span></button>
+  <span class="flow-arrow">→</span>
+  <button type="button" class="flow-step" data-go="3" disabled><b>03</b><span>Choose frames</span></button>
+  <span class="flow-arrow">→</span>
+  <button type="button" class="flow-step" data-go="4" disabled><b>04</b><span>Save &amp; wall</span></button>
+ </nav>
+ <div class="workspace wizard-workspace wizard-step-1">
   <section class="preview-panel" aria-label="Portrait preview">
-   <div class="preview-top"><span class="panel-label">01 / Your Haunted Creation</span><span class="live" id="busy">On-device studio</span></div>
+   <div class="preview-top"><span class="panel-label" id="progress-caption">01 / Capture your photo</span><span class="live" id="busy">On-device studio</span></div>
    <div class="stage" id="stage">
     <span class="stage-hint">SMEMR · Halloween Edition</span>
     <canvas id="poster" aria-label="Generated skeleton photo preview">Your browser does not support Canvas.</canvas>
     <video id="video" autoplay playsinline muted aria-label="Camera preview"></video>
    </div>
-   <div class="preview-actions">
+   <div class="preview-actions" id="preview-actions">
     <div class="hint">Cinematic poster · 1200 × 1500 PNG · Processed on-device</div><button class="button outline sm" id="share" disabled>↗ Share</button>
     <button class="button gold sm" id="download" disabled>↓ Download portrait</button>
    </div>
   </section>
   <aside class="controls" aria-label="Photo controls">
-   <section class="card">
-    <div class="section-number">Step 01 · Your photo</div>
-    <h2>Enter the field station</h2>
-    <p>Take a photo with the camera or upload one from your device. Front-facing, well-lit faces work best.</p>
-    <div class="duo">
-     <button class="button primary" id="camera-start">◉ Open camera</button>
-     <button class="button" id="upload-btn">↑ Upload photo</button>
-    </div>
+   <section class="card" id="photo-step">
+    <div class="section-number">Step 01 · Camera only</div>
+    <h2>Take your SMEMR photo</h2>
+    <p>Look toward the camera, make sure everyone fits, and capture. No uploading or accounts needed. For best results, use good lighting.</p>
+    <button class="button primary full" id="camera-start">◉ Start camera</button>
+    <button class="button" id="upload-btn" hidden disabled aria-hidden="true" tabindex="-1">Upload unavailable</button>
     <input type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif" id="upload" aria-label="Choose a photo to transform">
-    <div class="duo" style="margin-top:9px">
+    <div class="duo" style="margin-top:12px">
      <button class="button gold full" id="capture" hidden>● Capture photo</button>
      <button class="button outline" id="retake">↻ Start over</button>
     </div>
-    <div id="status" class="result-status" role="status" aria-live="polite">Ready for your photo. No account required.</div>
+    <div id="status" class="result-status" role="status" aria-live="polite">Ready to start. Photos stay on this device until you explicitly choose to publish.</div>
+    <p class="device-note">Camera permission is requested only when you tap Start camera.</p>
    </section>
-   <section class="card experience-card">
+   <section class="card" id="align-step" hidden>
+    <div class="section-number">Step 02 · Center and align</div>
+    <h2>Make every face fit</h2>
+    <p>Tap Align faces. Position the face crop over your face, adjust the size, and confirm. For groups, add another person (up to three).</p>
+    <button type="button" class="button primary full" id="align-open" disabled>◎ Center &amp; align faces</button>
+    <p id="align-message" class="device-note">Take a photo first to unlock alignment.</p>
+    <div class="duo">
+     <button type="button" class="button outline" data-back="1">← Retake photo</button>
+     <button type="button" class="button gold" id="align-next" disabled>Choose a look →</button>
+    </div>
+   </section>
+   <section class="card experience-card" id="experience-step" hidden>
     <div class="section-number">Step 02 · Your experience</div>
     <h2>Choose your Halloween adventure</h2>
     <p>Switch between our skeleton costumes and a cinematic frame over your real photo, even after taking the photo.</p>
@@ -65,8 +86,9 @@
      <button type="button" class="experience-choice" data-style="frame" aria-pressed="false"><span>📸</span><strong>Haunted Frames</strong><small>Real photo, spooky overlays</small></button>
     </div>
     <button type="button" class="button surprise full" id="surprise">✦ Surprise me!</button>
+    <div class="duo flow-actions"><button type="button" class="button outline" data-back="2">← Align</button><button type="button" class="button gold" id="frame-next">Review photo →</button></div>
    </section>
-   <section class="card" id="skeleton-scenes">
+   <section class="card" id="skeleton-scenes" hidden>
     <div class="section-number">Step 03 · Skeleton setting</div>
     <h2>Where will you haunt?</h2>
     <p>Four SMEMR-themed environments. Your skeleton portrait updates instantly.</p>
@@ -97,7 +119,7 @@
     </div>
     <p class="frame-tip">Accessories use detected face positions when available. Use manual face placement to correct them. The entire photo stays real.</p>
    </section>
-   <section class="card" id="finish-card">
+   <section class="card" id="finish-card" hidden>
     <div class="section-number">Step 04 · Fine-tune &amp; save</div>
     <h2 id="finish-title">Your face. Their bones.</h2>
     <p id="finish-help">Your real face is preserved. Body pose matching falls back to a standing skeleton when necessary.</p>
@@ -105,21 +127,45 @@
     <div class="control-row"><label for="fit">Face fit</label><output id="fit-value" for="fit">100%</output></div>
     <input id="fit" type="range" min="70" max="135" step="5" value="100"></div>
     <button class="plain-link" id="manual" disabled>Face missing or misaligned? Add or adjust faces →</button><p class="privacy-chip">✦ Private by design — no automatic photo upload or gallery save.</p>
-    <button class="button gold full" id="download-duplicate" disabled>Download your Halloween portrait ↓</button>
+    <button class="button gold full" id="download-duplicate" disabled>Download your SMEMR photo ↓</button>
+    <button type="button" class="button outline full flow-back" data-back="3">← Change frames</button>
+    <section class="publish-card" aria-label="Optional event photo wall publishing">
+      <h3>Add your photo to our virtual wall?</h3>
+      <p>The wall is visible on this page. Publishing is optional; only a smaller photo preview is saved. Photos expire from the shared wall after up to 30 days.</p>
+      <label><input type="checkbox" id="wall-consent"> I choose to display this photo on the SMEMR event wall.</label>
+      <label><input type="checkbox" id="wall-adult"> Everyone pictured agreed, and I have organizer/adult permission for minors.</label>
+      <button type="button" class="button primary full" id="publish-wall">Add this photo to wall</button>
+      <div id="wall-publish-status" class="wall-status" role="status" aria-live="polite">Your photo is private until you approve sharing.</div>
+    </section>
    </section>
   </aside>
  </div>
- <footer class="foot"><div><strong>University of Arizona · School of Mining Engineering &amp; Mineral Resources</strong><br>Made for public education and outreach. The image is an illustrative Halloween souvenir, not an anatomical visualization.</div><div>Privacy-first: photos are processed on your device, not uploaded or automatically saved. <br>Ask permission before photographing other people, especially children.</div></footer>
+ <section class="wall-section" id="wall" aria-labelledby="wall-heading">
+  <div class="wall-heading">
+   <div><div class="eyebrow">Our virtual yearbook</div><h2 id="wall-heading">THE SMEMR PHOTO WALL</h2>
+    <p>A living collage of your event photos. Scroll, tap a portrait to see it, and join the wall when you are ready.</p></div>
+   <div class="wall-heading-right"><span id="wall-count">0 portraits</span><button class="button outline sm" id="wall-refresh">↻ Refresh wall</button></div>
+  </div>
+  <div id="wall-mode" class="wall-mode" role="status">Loading the photo wall…</div>
+  <div id="wall-grid" class="wall-grid" aria-live="polite"></div>
+  <button type="button" class="button outline wall-more" id="wall-more" hidden>Show more photos ↓</button>
+ </section>
+ <dialog id="wall-dialog" class="wall-dialog" aria-label="Photo wall preview">
+  <img id="wall-preview-img" alt="Selected SMEMR event wall photo">
+  <div class="wall-dialog-actions"><button type="button" class="button outline" id="wall-close">Close</button>
+    <button type="button" class="button primary" id="wall-remove" hidden>Remove my photo</button></div>
+ </dialog>
+ <footer class="foot"><div><strong>SMEMR · School of Mining Engineering &amp; Mineral Resources</strong><br>University of Arizona. Interactive education and outreach. Halloween skeletons are artistic illustrations.</div><div>Photos are processed on your device. Nothing goes on the virtual wall without permission. <br>Shared wall requires event storage; your own device’s local wall works offline.</div></footer>
 </main>
 <div class="manual-photo" id="manual-modal" role="dialog" aria-modal="true" aria-label="Manual face positioning">
  <div class="manual-dialog">
-  <h2>Place your faces</h2><p>Select a person, tap the center of their face, and adjust the crop. Add up to three faces, even when automatic detection is unavailable.</p>
+  <h2>Center &amp; align your faces</h2><p>Select a person, tap the center of their face, and adjust the crop. Add up to three faces, even when automatic detection is unavailable.</p>
   <div class="manual-person-row"><label for="manual-person">Edit person</label><select id="manual-person" aria-label="Choose a face to adjust"></select><span>Up to 3 people</span></div>
   <canvas id="manual-canvas" aria-label="Tap to set face position"></canvas>
   <div class="control-row"><label for="manual-x">Horizontal position</label><label for="manual-y">Vertical position</label></div>
   <div class="duo"><input id="manual-x" type="range" min="0" max="100" value="50"><input id="manual-y" type="range" min="0" max="100" value="38"></div>
   <div class="control-row"><label for="manual-size">Face crop size</label></div><input id="manual-size" type="range" min="10" max="55" value="20">
-  <div class="duo"><button class="button outline" id="manual-cancel">Cancel</button><button class="button gold" id="manual-apply">Apply face position</button></div>
+  <div class="duo"><button class="button outline" id="manual-cancel">Cancel</button><button class="button gold" id="manual-apply">Use this alignment</button></div>
  </div>
 </div>
 </body></html>

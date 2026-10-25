@@ -1,7 +1,7 @@
 {
-  "name": "SMEMR Photo Booth",
+  "name": "SMEMR Photo Booth | University of Arizona",
   "short_name": "SMEMR Booth",
-  "description": "University of Arizona School of Mining Engineering & Mineral Resources Photo Booth",
+  "description": "SMEMR Photo Booth: guided camera portraits and virtual event photo wall from the School of Mining Engineering & Mineral Resources",
   "start_url": "/index.html",
   "display": "standalone",
   "orientation": "portrait",

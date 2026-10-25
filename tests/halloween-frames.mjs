@@ -5,7 +5,7 @@ try{
  browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:390,height:844},acceptDownloads:true});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- assert.equal((await page.goto('http://127.0.0.1:8765/halloween.html')).status(),200);
+ assert.equal((await page.goto('http://127.0.0.1:8765/classic-halloween.html')).status(),200);
  await page.locator('[data-style="frame"]').click();
  assert.equal(await page.locator('#frame-scenes').isVisible(),true);
  assert.equal(await page.locator('#skeleton-scenes').isVisible(),false);

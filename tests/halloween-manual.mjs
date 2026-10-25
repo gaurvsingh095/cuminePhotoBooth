@@ -4,7 +4,7 @@ let browser;
 try{
  browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:390,height:844},acceptDownloads:true});
- const response=await page.goto('http://127.0.0.1:8765/halloween.html',{waitUntil:'domcontentloaded'});
+ const response=await page.goto('http://127.0.0.1:8765/classic-halloween.html',{waitUntil:'domcontentloaded'});
  assert.equal(response.status(),200);
  assert.equal(await page.locator('#download-duplicate').isDisabled(),true);
  await page.locator('[data-scene="pumpkin"]').click();

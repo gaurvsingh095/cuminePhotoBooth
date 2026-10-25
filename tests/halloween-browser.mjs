@@ -8,7 +8,7 @@ try{
  const consoleErrors=[];
  page.on('pageerror',err=>consoleErrors.push(err.message));
  page.on('console',msg=>{if(msg.type()==='error')console.log('PAGE ERROR:',msg.text())});
- const url='http://127.0.0.1:8765/halloween.html';
+ const url='http://127.0.0.1:8765/classic-halloween.html';
  const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:40000});
  assert.equal(response?.status(),200);
  await page.getByRole('heading',{name:/Skeleton Crew/i}).waitFor();

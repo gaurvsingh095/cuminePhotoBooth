@@ -1,7 +1,7 @@
 name: Halloween booth browser smoke test
 on:
   push:
-    branches: [feature/cumine-halloween-2026]
+    branches: [feature/cumine-halloween-2026, feature/halloween-cinematic-frames]
   pull_request:
     branches: [main]
     paths: [public/halloween.html, public/js/halloween.js, public/js/halloween-pose.js, public/js/halloween-frames.js, public/css/halloween.css, vercel.json, tests/**, .github/workflows/halloween-smoke.yml]

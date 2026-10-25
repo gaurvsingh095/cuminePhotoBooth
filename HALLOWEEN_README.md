@@ -21,3 +21,10 @@ GitHub Actions runs the three browser suites from `tests/` on Ubuntu 24.04. Real
 
 ## Maintenance
 Main booth source is not replaced with the photo-station project. Both apps remain separate. The Halloween assets were ported from `smemrPhotoStation`'s tested October 25 release, with the CI browser suites mirrored here.
+
+## Cinematic augmented frames (October 2026)
+A new photo-preserving mode runs alongside Skeleton Crew. Six designs: Copper After Dark, Ghost Shift, Witching Hour, Pumpkin Panic, Midnight Miner and Cursed Polaroid. Users can select photo mood, fog intensity, captions, head accessories, Surprise Me, browser-native share (download fallback), and PNG export.
+
+All Halloween compositions use the original picture with locally drawn overlays; no photos upload to gallery or a generative image service. Framed portraits work instantly without face detection. Accessory placement tries MediaPipe locally and falls back to manual placement. These are composited AR-style overlays, NOT live tracked augmented reality or AI-photorealistic body replacements.
+
+CI tests include the existing three Halloween suites and `tests/halloween-frames.mjs`. Real iPad/Android cameras, slow Wi-Fi, model asset availability and physical kiosk performance still require event-device verification.

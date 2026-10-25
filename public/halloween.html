@@ -22,21 +22,21 @@
  <section class="intro" aria-label="Introduction">
   <div>
     <div class="eyebrow">SMEMR seasonal photo experience</div>
-    <h1>Join the <em>Skeleton Crew.</em></h1>
-    <p>One photo. A whole new body. Step into our haunted mine, keep your real face, and emerge as part of the skeleton crew. Designed for SMEMR outreach events.</p>
+    <h1>Make the mine <em>haunted.</em></h1>
+    <p>Two ways to get spooky: join the Skeleton Crew, or keep your actual photo inside cinematic Halloween frames. Capture, customize, surprise your friends, and download a souvenir.</p>
   </div>
   <div class="tagline">HALLOWEEN 2026 &nbsp; • &nbsp; MADE FOR THE MINE</div>
  </section>
  <div class="workspace">
   <section class="preview-panel" aria-label="Portrait preview">
-   <div class="preview-top"><span class="panel-label">01 / Your Skeleton Portrait</span><span class="live" id="busy">On-device studio</span></div>
+   <div class="preview-top"><span class="panel-label">01 / Your Haunted Creation</span><span class="live" id="busy">On-device studio</span></div>
    <div class="stage" id="stage">
     <span class="stage-hint">SMEMR · Halloween Edition</span>
     <canvas id="poster" aria-label="Generated skeleton photo preview">Your browser does not support Canvas.</canvas>
     <video id="video" autoplay playsinline muted aria-label="Camera preview"></video>
    </div>
    <div class="preview-actions">
-    <div class="hint">Portrait format · 1200 × 1500 PNG · Up to three faces</div>
+    <div class="hint">Cinematic poster · 1200 × 1500 PNG · Processed on-device</div><button class="button outline sm" id="share" disabled>↗ Share</button>
     <button class="button gold sm" id="download" disabled>↓ Download portrait</button>
    </div>
   </section>
@@ -56,8 +56,18 @@
     </div>
     <div id="status" class="result-status" role="status" aria-live="polite">Ready for your photo. No account required.</div>
    </section>
-   <section class="card">
-    <div class="section-number">Step 02 · Choose your setting</div>
+   <section class="card experience-card">
+    <div class="section-number">Step 02 · Your experience</div>
+    <h2>Choose your Halloween adventure</h2>
+    <p>Switch between our skeleton costumes and a cinematic frame over your real photo, even after taking the photo.</p>
+    <div class="experience-switch" role="group" aria-label="Experience mode">
+     <button type="button" class="experience-choice selected" data-style="skeleton" aria-pressed="true"><span>☠️</span><strong>Skeleton Crew</strong><small>Your face, their bones</small></button>
+     <button type="button" class="experience-choice" data-style="frame" aria-pressed="false"><span>📸</span><strong>Haunted Frames</strong><small>Real photo, spooky overlays</small></button>
+    </div>
+    <button type="button" class="button surprise full" id="surprise">✦ Surprise me!</button>
+   </section>
+   <section class="card" id="skeleton-scenes">
+    <div class="section-number">Step 03 · Skeleton setting</div>
     <h2>Where will you haunt?</h2>
     <p>Four SMEMR-themed environments. Your skeleton portrait updates instantly.</p>
     <div class="choice-list" role="group" aria-label="Choose a background">
@@ -67,14 +77,34 @@
      <button class="choice" data-scene="pumpkin" aria-pressed="false"><span class="mark">🎃</span><span>Pumpkin Pit</span></button>
     </div>
    </section>
-   <section class="card">
-    <div class="section-number">Step 03 · Fine-tune &amp; save</div>
-    <h2>Your face. Their bones.</h2>
-    <p>Keep your real face. Our locally processed pose model shapes the skeleton to your stance when enough of your body is visible. Up to three people can join.</p>
-    <label class="pose-option"><input type="checkbox" id="pose-toggle" checked> <span>Match skeleton to my body pose <small>Automatically falls back to a standing skeleton if the body is outside the photo.</small></span></label>
+   <section class="card" id="frame-scenes" hidden>
+    <div class="section-number">Step 03 · Augmented frames</div>
+    <h2>Choose your haunted overlay</h2>
+    <p>These effects decorate your actual photo. No face detection is required to download a frame.</p>
+    <div class="frame-picker" role="group" aria-label="Choose Halloween frame">
+     <button class="frame-option selected" data-frame="copper" aria-pressed="true"><span>⛏️</span>Copper After Dark</button>
+     <button class="frame-option" data-frame="specter" aria-pressed="false"><span>👻</span>Ghost Shift</button>
+     <button class="frame-option" data-frame="witch" aria-pressed="false"><span>🧙</span>Witching Hour</button>
+     <button class="frame-option" data-frame="pumpkin" aria-pressed="false"><span>🎃</span>Pumpkin Panic</button>
+     <button class="frame-option" data-frame="moon" aria-pressed="false"><span>🌙</span>Midnight Miner</button>
+     <button class="frame-option" data-frame="polaroid" aria-pressed="false"><span>📷</span>Cursed Polaroid</button>
+    </div>
+    <div class="setting-grid">
+     <label for="frame-filter">Photo mood<select id="frame-filter"><option value="cinema">Cinematic</option><option value="natural">Natural photo</option><option value="copper">Warm copper</option><option value="moon">Moonlit</option></select></label>
+     <label for="caption">Souvenir caption<select id="caption"><option value="crew">The Haunted Crew</option><option value="shift">Survived the Night Shift</option><option value="mine">I Dig Halloween</option><option value="boo">Boo at the Mine</option><option value="none">No caption</option></select></label>
+     <label for="accessory">Face accessory<select id="accessory"><option value="none">None</option><option value="helmet">Miner headlamp</option><option value="witch">Witch hat</option><option value="horns">Devil horns</option><option value="glow">Glowing eyes</option></select></label>
+     <label for="strength">Haunt level <output id="strength-value" for="strength">65%</output><input type="range" id="strength" min="0" max="100" value="65" step="5"></label>
+    </div>
+    <p class="frame-tip">Accessories use detected face positions when available. Use manual face placement to correct them. The entire photo stays real.</p>
+   </section>
+   <section class="card" id="finish-card">
+    <div class="section-number">Step 04 · Fine-tune &amp; save</div>
+    <h2 id="finish-title">Your face. Their bones.</h2>
+    <p id="finish-help">Your real face is preserved. Body pose matching falls back to a standing skeleton when necessary.</p>
+    <div id="pose-controls"><label class="pose-option"><input type="checkbox" id="pose-toggle" checked> <span>Match skeleton to my body pose <small>Automatically falls back to a standing skeleton if the body is outside the photo.</small></span></label>
     <div class="control-row"><label for="fit">Face fit</label><output id="fit-value" for="fit">100%</output></div>
-    <input id="fit" type="range" min="70" max="135" step="5" value="100">
-    <button class="plain-link" id="manual" disabled>Face missing or misaligned? Add or adjust faces →</button>
+    <input id="fit" type="range" min="70" max="135" step="5" value="100"></div>
+    <button class="plain-link" id="manual" disabled>Face missing or misaligned? Add or adjust faces →</button><p class="privacy-chip">✦ Private by design — no automatic photo upload or gallery save.</p>
     <button class="button gold full" id="download-duplicate" disabled>Download your Halloween portrait ↓</button>
    </section>
   </aside>

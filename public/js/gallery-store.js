@@ -52,7 +52,7 @@ window.GalleryStore = {
     photo.createdAt = photo.createdAt || Date.now();
 
     // 1. Local IndexedDB — instant, never fails
-    IDB.put(photo).catch(() => {});
+    await IDB.put(photo).catch(() => {});
 
     // 2. API — for cross-device sharing (fire and forget)
     if (location.protocol !== 'file:') {

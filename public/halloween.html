@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09111c">
+<meta name="description" content="SMEMR Halloween Skeleton Studio — turn your photo into a spooky skeleton crew portrait, right in your browser.">
+<title>Halloween Skeleton Studio — SMEMR | University of Arizona</title>
+<link rel="stylesheet" href="css/halloween.css">
+<script type="module" src="js/halloween.js"></script>
+</head>
+<body>
+<div class="topline"></div>
+<header class="site-header">
+ <a class="brand" href="index.html" aria-label="Return to SMEMR photo booth">
+  <img src="assets/logos/SMEMR.svg" alt="SMEMR">
+  <span class="divider"></span><span class="brand-sub">Halloween<br>Field Station</span>
+ </a>
+ <a class="header-link" href="index.html">← Original photo booth</a>
+</header>
+<main class="shell">
+ <section class="intro" aria-label="Introduction">
+  <div>
+    <div class="eyebrow">SMEMR seasonal photo experience</div>
+    <h1>Join the <em>Skeleton Crew.</em></h1>
+    <p>One photo. A whole new body. Step into our haunted mine, keep your real face, and emerge as part of the skeleton crew. Designed for SMEMR outreach events.</p>
+  </div>
+  <div class="tagline">HALLOWEEN 2026 &nbsp; • &nbsp; MADE FOR THE MINE</div>
+ </section>
+ <div class="workspace">
+  <section class="preview-panel" aria-label="Portrait preview">
+   <div class="preview-top"><span class="panel-label">01 / Your Skeleton Portrait</span><span class="live" id="busy">On-device studio</span></div>
+   <div class="stage" id="stage">
+    <span class="stage-hint">SMEMR · Halloween Edition</span>
+    <canvas id="poster" aria-label="Generated skeleton photo preview">Your browser does not support Canvas.</canvas>
+    <video id="video" autoplay playsinline muted aria-label="Camera preview"></video>
+   </div>
+   <div class="preview-actions">
+    <div class="hint">Portrait format · 1200 × 1500 PNG · Up to three faces</div>
+    <button class="button gold sm" id="download" disabled>↓ Download portrait</button>
+   </div>
+  </section>
+  <aside class="controls" aria-label="Photo controls">
+   <section class="card">
+    <div class="section-number">Step 01 · Your photo</div>
+    <h2>Enter the field station</h2>
+    <p>Take a photo with the camera or upload one from your device. Front-facing, well-lit faces work best.</p>
+    <div class="duo">
+     <button class="button primary" id="camera-start">◉ Open camera</button>
+     <button class="button" id="upload-btn">↑ Upload photo</button>
+    </div>
+    <input type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif" id="upload" aria-label="Choose a photo to transform">
+    <div class="duo" style="margin-top:9px">
+     <button class="button gold full" id="capture" hidden>● Capture photo</button>
+     <button class="button outline" id="retake">↻ Start over</button>
+    </div>
+    <div id="status" class="result-status" role="status" aria-live="polite">Ready for your photo. No account required.</div>
+   </section>
+   <section class="card">
+    <div class="section-number">Step 02 · Choose your setting</div>
+    <h2>Where will you haunt?</h2>
+    <p>Four SMEMR-themed environments. Your skeleton portrait updates instantly.</p>
+    <div class="choice-list" role="group" aria-label="Choose a background">
+     <button class="choice selected" data-scene="shaft" aria-pressed="true"><span class="mark">⛏</span><span>Haunted Shaft</span></button>
+     <button class="choice" data-scene="crypt" aria-pressed="false"><span class="mark">◆</span><span>Copper Crypt</span></button>
+     <button class="choice" data-scene="moon" aria-pressed="false"><span class="mark">☾</span><span>Moon Mine</span></button>
+     <button class="choice" data-scene="pumpkin" aria-pressed="false"><span class="mark">🎃</span><span>Pumpkin Pit</span></button>
+    </div>
+   </section>
+   <section class="card">
+    <div class="section-number">Step 03 · Fine-tune &amp; save</div>
+    <h2>Your face. Their bones.</h2>
+    <p>Keep your real face. Our locally processed pose model shapes the skeleton to your stance when enough of your body is visible. Up to three people can join.</p>
+    <label class="pose-option"><input type="checkbox" id="pose-toggle" checked> <span>Match skeleton to my body pose <small>Automatically falls back to a standing skeleton if the body is outside the photo.</small></span></label>
+    <div class="control-row"><label for="fit">Face fit</label><output id="fit-value" for="fit">100%</output></div>
+    <input id="fit" type="range" min="70" max="135" step="5" value="100">
+    <button class="plain-link" id="manual" disabled>Face missing or misaligned? Add or adjust faces →</button>
+    <button class="button gold full" id="download-duplicate" disabled>Download your Halloween portrait ↓</button>
+   </section>
+  </aside>
+ </div>
+ <footer class="foot"><div><strong>University of Arizona · School of Mining Engineering &amp; Mineral Resources</strong><br>Made for public education and outreach. The image is an illustrative Halloween souvenir, not an anatomical visualization.</div><div>Privacy-first: photos are processed on your device, not uploaded or automatically saved. <br>Ask permission before photographing other people, especially children.</div></footer>
+</main>
+<div class="manual-photo" id="manual-modal" role="dialog" aria-modal="true" aria-label="Manual face positioning">
+ <div class="manual-dialog">
+  <h2>Place your faces</h2><p>Select a person, tap the center of their face, and adjust the crop. Add up to three faces, even when automatic detection is unavailable.</p>
+  <div class="manual-person-row"><label for="manual-person">Edit person</label><select id="manual-person" aria-label="Choose a face to adjust"></select><span>Up to 3 people</span></div>
+  <canvas id="manual-canvas" aria-label="Tap to set face position"></canvas>
+  <div class="control-row"><label for="manual-x">Horizontal position</label><label for="manual-y">Vertical position</label></div>
+  <div class="duo"><input id="manual-x" type="range" min="0" max="100" value="50"><input id="manual-y" type="range" min="0" max="100" value="38"></div>
+  <div class="control-row"><label for="manual-size">Face crop size</label></div><input id="manual-size" type="range" min="10" max="55" value="20">
+  <div class="duo"><button class="button outline" id="manual-cancel">Cancel</button><button class="button gold" id="manual-apply">Apply face position</button></div>
+ </div>
+</div>
+</body></html>

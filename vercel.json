@@ -1,4 +1,22 @@
 {
   "version": 2,
-  "outputDirectory": "public"
+  "outputDirectory": "public",
+  "rewrites": [
+    {
+      "source": "/vendor/mediapipe/vision_bundle.mjs",
+      "destination": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/vision_bundle.mjs"
+    },
+    {
+      "source": "/vendor/mediapipe/wasm/:asset*",
+      "destination": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm/:asset*"
+    },
+    {
+      "source": "/vendor/models/face_detector.tflite",
+      "destination": "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite"
+    },
+    {
+      "source": "/vendor/models/pose_landmarker_lite.task",
+      "destination": "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task"
+    }
+  ]
 }

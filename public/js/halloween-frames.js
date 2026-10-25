@@ -136,6 +136,6 @@ export function drawAugmentedFrame(ctx,source,{theme='copper',filter='cinema',in
  ctx.fillStyle='#0b131f';ctx.fillRect(0,1300,W,200);
  ctx.strokeStyle=frame.accent;ctx.lineWidth=3;line(ctx,[[84,1330],[1116,1330]],3,frame.accent);
  ctx.fillStyle='#f6e5c9';ctx.font='bold 44px Impact,Arial,sans-serif';ctx.fillText(frame.tag,600,1401,1060);
- ctx.font='500 20px Arial,sans-serif';ctx.fillStyle='#c5d0d9';ctx.fillText('CU AT THE MINE  •  HALLOWEEN 2026',600,1450);
+ ctx.font='600 25px Arial,sans-serif';ctx.fillStyle='#c5d0d9';ctx.fillText('SCHOOL OF MINING ENGINEERING & MINERAL RESOURCES',600,1450,1060);
  ctx.restore();
 }

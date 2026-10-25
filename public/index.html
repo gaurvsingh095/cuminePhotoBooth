@@ -1,250 +1,170 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,maximum-scale=1.0,user-scalable=no">
-<meta name="theme-color" content="#0C234B">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SMEMR Booth">
-<meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json">
-<title>SMEMR Photo Booth — Cu at the Mine 2026</title>
-<link rel="stylesheet" href="css/main.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09111c">
+<meta name="description" content="SMEMR Photo Booth: one guided camera experience, Halloween augmented frames, Skeleton Crew portraits and a collaborative photo wall.">
+<title>SMEMR Photo Booth | School of Mining Engineering &amp; Mineral Resources</title>
+<link rel="stylesheet" href="css/halloween.css">
+<link rel="stylesheet" href="css/booth-wizard.css">
+<script type="module" src="js/halloween.js"></script>
+<script type="module" src="js/booth-wizard.js"></script>
 </head>
 <body>
-<div id="app">
-
-<!-- ATTRACT -->
-<div id="s-attract" class="screen active" onclick="goTo('mode')">
-  <div class="attract-bg"></div>
-  <div class="hex-bg"></div>
-  <canvas id="particle-canvas" class="attract-particles"></canvas>
-  <div class="attract-inner">
-    <img src="assets/logos/SMEMR.svg" class="attract-logo" alt="SMEMR" onerror="this.style.display='none'">
-    <div class="attract-h1">Cu at the Mine<br><span class="attract-accent">2026</span></div>
-    <div class="attract-dept">Professional Development Summer Academy<br>School of Mining Engineering &amp; Mineral Resources</div>
-    <div class="attract-modes">
-      <span class="mode-chip">📷 Single</span>
-      <span class="mode-chip">🖼️ Collage</span>
-      <span class="mode-chip">🎞️ GIF</span>
-      <a class="mode-chip" href="halloween.html" onclick="event.stopPropagation()" style="text-decoration:none;color:#ffcb91;border:1px solid #bd7c44;background:#43251c">🎃 Halloween Remix</a>
-    </div>
-    <button class="attract-cta" onclick="event.stopPropagation();goTo('mode')">Tap to Start</button>
-    <div class="attract-sub">Choose a frame · Smile · Get your SMEMR photo</div>
+<div class="topline"></div>
+<header class="site-header">
+ <a class="brand" href="#start" aria-label="SMEMR Photo Booth home">
+  <img src="assets/logos/SMEMR.svg" alt="SMEMR">
+  <span class="divider"></span><span class="brand-sub">SMEMR<br>Photo Booth</span>
+ </a>
+ <nav class="top-nav" aria-label="Photo booth navigation"><a class="header-link" href="#start">Create a photo</a><a class="header-link" href="#wall">Virtual wall</a><a class="header-link legacy-link" href="classic.html">Classic Booth</a></nav>
+</header>
+<main class="shell">
+ <section class="intro" aria-label="Introduction">
+  <div>
+    <div class="eyebrow">University of Arizona · School of Mining Engineering &amp; Mineral Resources</div>
+    <h1>SMEMR <em>Photo Booth.</em></h1>
+    <p>One photo. Your look. A whole wall of memories. Start your camera, align your face, choose a Halloween frame or Skeleton Crew costume, then keep your creation or add it to our shared event wall.</p>
   </div>
-  <a href="gallery.html" class="attract-gallery-btn" onclick="event.stopPropagation()">
-    🖼 Photo Gallery <span class="gallery-count-badge" id="gallery-count-badge"></span>
-  </a>
-  <button class="fs-fab" onclick="event.stopPropagation();toggleFS()" title="Fullscreen">⛶</button>
-  <div class="admin-zone" onclick="event.stopPropagation();adminPrompt()"></div>
+  <div class="tagline">SMEMR &nbsp; • &nbsp; UNIVERSITY OF ARIZONA</div>
+ </section>
+ <nav id="start" class="flow-steps" aria-label="Photo booth progress">
+  <button type="button" class="flow-step active" data-go="1" aria-current="step"><b>01</b><span>Take photo</span></button>
+  <span class="flow-arrow">→</span>
+  <button type="button" class="flow-step" data-go="2" disabled><b>02</b><span>Align faces</span></button>
+  <span class="flow-arrow">→</span>
+  <button type="button" class="flow-step" data-go="3" disabled><b>03</b><span>Choose frames</span></button>
+  <span class="flow-arrow">→</span>
+  <button type="button" class="flow-step" data-go="4" disabled><b>04</b><span>Save &amp; wall</span></button>
+ </nav>
+ <div class="workspace wizard-workspace wizard-step-1">
+  <section class="preview-panel" aria-label="Portrait preview">
+   <div class="preview-top"><span class="panel-label" id="progress-caption">01 / Capture your photo</span><span class="live" id="busy">On-device studio</span></div>
+   <div class="stage" id="stage">
+    <span class="stage-hint">SMEMR · Halloween Edition</span>
+    <canvas id="poster" aria-label="Generated skeleton photo preview">Your browser does not support Canvas.</canvas>
+    <video id="video" autoplay playsinline muted aria-label="Camera preview"></video>
+   </div>
+   <div class="preview-actions" id="preview-actions">
+    <div class="hint">Cinematic poster · 1200 × 1500 PNG · Processed on-device</div><button class="button outline sm" id="share" disabled>↗ Share</button>
+    <button class="button gold sm" id="download" disabled>↓ Download portrait</button>
+   </div>
+  </section>
+  <aside class="controls" aria-label="Photo controls">
+   <section class="card" id="photo-step">
+    <div class="section-number">Step 01 · Camera only</div>
+    <h2>Take your SMEMR photo</h2>
+    <p>Look toward the camera, make sure everyone fits, and capture. No uploading or accounts needed. For best results, use good lighting.</p>
+    <button class="button primary full" id="camera-start">◉ Start camera</button>
+    <button class="button" id="upload-btn" hidden disabled aria-hidden="true" tabindex="-1">Upload unavailable</button>
+    <input type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif" id="upload" aria-label="Choose a photo to transform">
+    <div class="duo" style="margin-top:12px">
+     <button class="button gold full" id="capture" hidden>● Capture photo</button>
+     <button class="button outline" id="retake">↻ Start over</button>
+    </div>
+    <div id="status" class="result-status" role="status" aria-live="polite">Ready to start. Photos stay on this device until you explicitly choose to publish.</div>
+    <p class="device-note">Camera permission is requested only when you tap Start camera.</p>
+   </section>
+   <section class="card" id="align-step" hidden>
+    <div class="section-number">Step 02 · Center and align</div>
+    <h2>Make every face fit</h2>
+    <p>Tap Align faces. Position the face crop over your face, adjust the size, and confirm. For groups, add another person (up to three).</p>
+    <button type="button" class="button primary full" id="align-open" disabled>◎ Center &amp; align faces</button>
+    <p id="align-message" class="device-note">Take a photo first to unlock alignment.</p>
+    <div class="duo">
+     <button type="button" class="button outline" data-back="1">← Retake photo</button>
+     <button type="button" class="button gold" id="align-next" disabled>Choose a look →</button>
+    </div>
+   </section>
+   <section class="card experience-card" id="experience-step" hidden>
+    <div class="section-number">Step 02 · Your experience</div>
+    <h2>Choose your Halloween adventure</h2>
+    <p>Switch between our skeleton costumes and a cinematic frame over your real photo, even after taking the photo.</p>
+    <div class="experience-switch" role="group" aria-label="Experience mode">
+     <button type="button" class="experience-choice selected" data-style="skeleton" aria-pressed="true"><span>☠️</span><strong>Skeleton Crew</strong><small>Your face, their bones</small></button>
+     <button type="button" class="experience-choice" data-style="frame" aria-pressed="false"><span>📸</span><strong>Haunted Frames</strong><small>Real photo, spooky overlays</small></button>
+    </div>
+    <button type="button" class="button surprise full" id="surprise">✦ Surprise me!</button>
+    <div class="duo flow-actions"><button type="button" class="button outline" data-back="2">← Align</button><button type="button" class="button gold" id="frame-next">Review photo →</button></div>
+   </section>
+   <section class="card" id="skeleton-scenes" hidden>
+    <div class="section-number">Step 03 · Skeleton setting</div>
+    <h2>Where will you haunt?</h2>
+    <p>Four SMEMR-themed environments. Your skeleton portrait updates instantly.</p>
+    <div class="choice-list" role="group" aria-label="Choose a background">
+     <button class="choice selected" data-scene="shaft" aria-pressed="true"><span class="mark">⛏</span><span>Haunted Shaft</span></button>
+     <button class="choice" data-scene="crypt" aria-pressed="false"><span class="mark">◆</span><span>Copper Crypt</span></button>
+     <button class="choice" data-scene="moon" aria-pressed="false"><span class="mark">☾</span><span>Moon Mine</span></button>
+     <button class="choice" data-scene="pumpkin" aria-pressed="false"><span class="mark">🎃</span><span>Pumpkin Pit</span></button>
+    </div>
+   </section>
+   <section class="card" id="frame-scenes" hidden>
+    <div class="section-number">Step 03 · Augmented frames</div>
+    <h2>Choose your haunted overlay</h2>
+    <p>These effects decorate your actual photo. No face detection is required to download a frame.</p>
+    <div class="frame-picker" role="group" aria-label="Choose Halloween frame">
+     <button class="frame-option selected" data-frame="copper" aria-pressed="true"><span>⛏️</span>Copper After Dark</button>
+     <button class="frame-option" data-frame="specter" aria-pressed="false"><span>👻</span>Ghost Shift</button>
+     <button class="frame-option" data-frame="witch" aria-pressed="false"><span>🧙</span>Witching Hour</button>
+     <button class="frame-option" data-frame="pumpkin" aria-pressed="false"><span>🎃</span>Pumpkin Panic</button>
+     <button class="frame-option" data-frame="moon" aria-pressed="false"><span>🌙</span>Midnight Miner</button>
+     <button class="frame-option" data-frame="polaroid" aria-pressed="false"><span>📷</span>Cursed Polaroid</button>
+    </div>
+    <div class="setting-grid">
+     <label for="frame-filter">Photo mood<select id="frame-filter"><option value="cinema">Cinematic</option><option value="natural">Natural photo</option><option value="copper">Warm copper</option><option value="moon">Moonlit</option></select></label>
+     <label for="caption">Souvenir caption<select id="caption"><option value="crew">The Haunted Crew</option><option value="shift">Survived the Night Shift</option><option value="mine">I Dig Halloween</option><option value="boo">Boo at the Mine</option><option value="none">No caption</option></select></label>
+     <label for="accessory">Face accessory<select id="accessory"><option value="none">None</option><option value="helmet">Miner headlamp</option><option value="witch">Witch hat</option><option value="horns">Devil horns</option><option value="glow">Glowing eyes</option></select></label>
+     <label for="strength">Haunt level <output id="strength-value" for="strength">65%</output><input type="range" id="strength" min="0" max="100" value="65" step="5"></label>
+    </div>
+    <p class="frame-tip">Accessories use detected face positions when available. Use manual face placement to correct them. The entire photo stays real.</p>
+   </section>
+   <section class="card" id="finish-card" hidden>
+    <div class="section-number">Step 04 · Fine-tune &amp; save</div>
+    <h2 id="finish-title">Your face. Their bones.</h2>
+    <p id="finish-help">Your real face is preserved. Body pose matching falls back to a standing skeleton when necessary.</p>
+    <div id="pose-controls"><label class="pose-option"><input type="checkbox" id="pose-toggle" checked> <span>Match skeleton to my body pose <small>Automatically falls back to a standing skeleton if the body is outside the photo.</small></span></label>
+    <div class="control-row"><label for="fit">Face fit</label><output id="fit-value" for="fit">100%</output></div>
+    <input id="fit" type="range" min="70" max="135" step="5" value="100"></div>
+    <button class="plain-link" id="manual" disabled>Face missing or misaligned? Add or adjust faces →</button><p class="privacy-chip">✦ Private by design — no automatic photo upload or gallery save.</p>
+    <button class="button gold full" id="download-duplicate" disabled>Download your SMEMR photo ↓</button>
+    <button type="button" class="button outline full flow-back" data-back="3">← Change frames</button>
+    <section class="publish-card" aria-label="Optional event photo wall publishing">
+      <h3>Add your photo to our virtual wall?</h3>
+      <p>The wall is visible on this page. Publishing is optional; only a smaller photo preview is saved. Photos expire from the shared wall after up to 30 days.</p>
+      <label><input type="checkbox" id="wall-consent"> I choose to display this photo on the SMEMR event wall.</label>
+      <label><input type="checkbox" id="wall-adult"> Everyone pictured agreed, and I have organizer/adult permission for minors.</label>
+      <button type="button" class="button primary full" id="publish-wall">Add this photo to wall</button>
+      <div id="wall-publish-status" class="wall-status" role="status" aria-live="polite">Your photo is private until you approve sharing.</div>
+    </section>
+   </section>
+  </aside>
+ </div>
+ <section class="wall-section" id="wall" aria-labelledby="wall-heading">
+  <div class="wall-heading">
+   <div><div class="eyebrow">Our virtual yearbook</div><h2 id="wall-heading">THE SMEMR PHOTO WALL</h2>
+    <p>A living collage of your event photos. Scroll, tap a portrait to see it, and join the wall when you are ready.</p></div>
+   <div class="wall-heading-right"><span id="wall-count">0 portraits</span><button class="button outline sm" id="wall-refresh">↻ Refresh wall</button></div>
+  </div>
+  <div id="wall-mode" class="wall-mode" role="status">Loading the photo wall…</div>
+  <div id="wall-grid" class="wall-grid" aria-live="polite"></div>
+ </section>
+ <dialog id="wall-dialog" class="wall-dialog" aria-label="Photo wall preview">
+  <img id="wall-preview-img" alt="Selected SMEMR event wall photo">
+  <div class="wall-dialog-actions"><button type="button" class="button outline" id="wall-close">Close</button>
+    <button type="button" class="button primary" id="wall-remove" hidden>Remove my photo</button></div>
+ </dialog>
+ <footer class="foot"><div><strong>SMEMR · School of Mining Engineering &amp; Mineral Resources</strong><br>University of Arizona. Interactive education and outreach. Halloween skeletons are artistic illustrations.</div><div>Photos are processed on your device. Nothing goes on the virtual wall without permission. <br>Shared wall requires event storage; your own device’s local wall works offline.</div></footer>
+</main>
+<div class="manual-photo" id="manual-modal" role="dialog" aria-modal="true" aria-label="Manual face positioning">
+ <div class="manual-dialog">
+  <h2>Center &amp; align your faces</h2><p>Select a person, tap the center of their face, and adjust the crop. Add up to three faces, even when automatic detection is unavailable.</p>
+  <div class="manual-person-row"><label for="manual-person">Edit person</label><select id="manual-person" aria-label="Choose a face to adjust"></select><span>Up to 3 people</span></div>
+  <canvas id="manual-canvas" aria-label="Tap to set face position"></canvas>
+  <div class="control-row"><label for="manual-x">Horizontal position</label><label for="manual-y">Vertical position</label></div>
+  <div class="duo"><input id="manual-x" type="range" min="0" max="100" value="50"><input id="manual-y" type="range" min="0" max="100" value="38"></div>
+  <div class="control-row"><label for="manual-size">Face crop size</label></div><input id="manual-size" type="range" min="10" max="55" value="20">
+  <div class="duo"><button class="button outline" id="manual-cancel">Cancel</button><button class="button gold" id="manual-apply">Use this alignment</button></div>
+ </div>
 </div>
-
-<!-- MODE -->
-<div id="s-mode" class="screen">
-  <div class="hdr">
-    <div class="hdr-brand">
-      <img src="assets/logos/SMEMR.svg" class="hdr-logo" alt="SMEMR" onerror="this.style.display='none'">
-      <div class="hdr-sep"></div>
-      <div class="hdr-text">
-        <div class="hdr-univ">The University of Arizona</div>
-        <div class="hdr-dept">Cu at the Mine 2026</div>
-      </div>
-    </div>
-    <div class="hdr-right">
-      <button class="fs-btn" onclick="toggleFS()">⛶</button>
-      <button class="btn btn-ghost" onclick="goTo('attract')">&#8592;</button>
-    </div>
-  </div>
-  <div class="mode-section-title"><h2>Choose Your Experience</h2><p>What kind of photo do you want?</p></div>
-  <div class="mode-grid">
-    <div class="mode-card" onclick="selectMode('single',null,1)"><div class="mode-icon">📷</div><div class="mode-name">Single Photo</div><div class="mode-desc">One perfect branded shot</div></div>
-    <div class="mode-card" onclick="selectMode('collage','grid',4)"><div class="mode-icon">⊞</div><div class="mode-name">2×2 Collage</div><div class="mode-desc">4 shots in a grid</div><div class="mode-badge">New</div></div>
-    <div class="mode-card" onclick="selectMode('collage','strip',3)"><div class="mode-icon">🎞</div><div class="mode-name">Photo Strip</div><div class="mode-desc">3-shot classic strip</div></div>
-    <div class="mode-card" onclick="selectMode('collage','wide',3)"><div class="mode-icon">⬛</div><div class="mode-name">Wide Banner</div><div class="mode-desc">3 shots side by side</div></div>
-    <div class="mode-card" onclick="selectMode('gif',null,3)"><div class="mode-icon">🎬</div><div class="mode-name">Animated GIF</div><div class="mode-desc">3 frames looping</div><div class="mode-badge">New</div></div>
-    <div class="mode-card" onclick="selectMode('boomer',null,2)"><div class="mode-icon">🔄</div><div class="mode-name">Boomerang</div><div class="mode-desc">2-shot bounce loop</div><div class="mode-badge">New</div></div>
-    <a class="mode-card" href="halloween.html" style="text-decoration:none;color:inherit;border-color:rgba(229,166,102,.6);background:linear-gradient(155deg,rgba(171,5,32,.18),rgba(25,24,36,.9))"><div class="mode-icon">☠️</div><div class="mode-name">Halloween Remix Studio</div><div class="mode-desc">Skeleton Crew + 6 cinematic haunted photo frames, stickers &amp; surprise effects</div><div class="mode-badge">Seasonal • 2 experiences</div></a>
-  </div>
-</div>
-
-<!-- TEMPLATE PICKER -->
-<div id="s-gallery" class="screen">
-  <div class="hdr">
-    <div class="hdr-brand">
-      <img src="assets/logos/SMEMR.svg" class="hdr-logo" alt="SMEMR" onerror="this.style.display='none'">
-      <div class="hdr-sep"></div>
-      <div class="hdr-text">
-        <div class="hdr-univ">The University of Arizona</div>
-        <div class="hdr-dept">Choose Your Frame</div>
-      </div>
-    </div>
-    <div class="hdr-right">
-      <button class="fs-btn" onclick="toggleFS()">⛶</button>
-      <button class="btn btn-ghost" onclick="goTo('mode')">&#8592;</button>
-    </div>
-  </div>
-  <div class="gal-header"><p>Tap a design, then press Select</p></div>
-  <div class="cat-bar" id="cat-bar"></div>
-  <div class="tmpl-grid" id="tmpl-grid"></div>
-  <div class="gal-footer">
-    <button class="btn btn-primary btn-lg btn-block" id="sel-btn" disabled onclick="initCamera()">Select &amp; Open Camera &rarr;</button>
-  </div>
-</div>
-
-<!-- CAMERA -->
-<div id="s-preview" class="screen">
-  <div class="hdr">
-    <div class="hdr-brand">
-      <img src="assets/logos/SMEMR.svg" class="hdr-logo" alt="SMEMR" onerror="this.style.display='none'">
-      <div class="hdr-sep"></div>
-      <div class="hdr-text">
-        <div class="hdr-univ">The University of Arizona</div>
-        <div class="hdr-dept">SMEMR Photo Booth</div>
-      </div>
-    </div>
-    <div class="hdr-right">
-      <button class="btn btn-ghost" onclick="stopStream();goTo('gallery')">&#8592; Templates</button>
-    </div>
-  </div>
-  <div class="cam-wrap">
-    <video id="cam-video" autoplay playsinline muted></video>
-    <div class="cam-guides">
-      <div class="guide-c gc-tl"></div><div class="guide-c gc-tr"></div>
-      <div class="guide-c gc-bl"></div><div class="guide-c gc-br"></div>
-    </div>
-    <div class="tmpl-label-overlay" id="cam-tmpl-label">Template</div>
-    <div class="cam-hint" id="cam-hint-text">Stand in the frame — smile!</div>
-    <div class="strip-indicator" id="strip-dots"></div>
-    <div class="cd-overlay" id="cd-overlay"><div class="cd-num" id="cd-num">5</div></div>
-    <div class="flash-layer" id="flash-layer"></div>
-    <div class="cam-error" id="cam-error" style="display:none">
-      <h3>Camera Not Available</h3>
-      <p>Please allow camera access, then tap Try Again.</p>
-      <button class="btn btn-primary" onclick="initCamera()" style="margin-top:.5rem">Try Again</button>
-      <button class="btn btn-ghost" onclick="goTo('gallery')" style="margin-top:8px">&#8592; Back</button>
-    </div>
-  </div>
-  <div class="cam-controls">
-    <div class="timer-row">
-      <button class="t-btn" onclick="setTimer(3,this)">3s</button>
-      <button class="t-btn on" onclick="setTimer(5,this)">5s</button>
-      <button class="t-btn" onclick="setTimer(10,this)">10s</button>
-    </div>
-    <button class="btn btn-primary btn-lg" id="snap-btn" style="flex:1" onclick="startCountdown()">📷 Take Photo</button>
-  </div>
-</div>
-
-<!-- REVIEW -->
-<div id="s-review" class="screen">
-  <div class="hdr">
-    <div class="hdr-brand">
-      <img src="assets/logos/SMEMR.svg" class="hdr-logo" alt="SMEMR" onerror="this.style.display='none'">
-      <div class="hdr-sep"></div>
-      <div class="hdr-text"><div class="hdr-univ">The University of Arizona</div><div class="hdr-dept">Review Your Photo</div></div>
-    </div>
-  </div>
-  <div class="review-wrap"><div class="result-frame"><canvas id="result-canvas"></canvas></div></div>
-  <div class="review-actions">
-    <button class="btn btn-primary btn-lg btn-block" onclick="goTo('delivery')">✓ Use This Photo</button>
-    <div class="review-row">
-      <button class="btn btn-secondary" style="flex:1" onclick="initCamera()">↩ Retake</button>
-      <button class="btn btn-secondary" style="flex:1" onclick="stopStream();goTo('gallery')">⊞ Templates</button>
-      <button class="btn btn-secondary" style="flex:1" onclick="stopStream();goTo('mode')">☰ Mode</button>
-    </div>
-  </div>
-</div>
-
-<!-- COLLAGE -->
-<div id="s-collage" class="screen">
-  <div class="hdr">
-    <div class="hdr-brand">
-      <img src="assets/logos/SMEMR.svg" class="hdr-logo" alt="SMEMR" onerror="this.style.display='none'">
-      <div class="hdr-sep"></div>
-      <div class="hdr-text"><div class="hdr-univ">The University of Arizona</div><div class="hdr-dept">Your Collage</div></div>
-    </div>
-  </div>
-  <div class="collage-preview-wrap"><canvas id="collage-canvas"></canvas></div>
-  <div class="review-actions">
-    <button class="btn btn-primary btn-lg btn-block" onclick="goTo('delivery')">✓ Use This Collage</button>
-    <div class="review-row">
-      <button class="btn btn-secondary" style="flex:1" onclick="initCamera()">↩ Retake</button>
-      <button class="btn btn-secondary" style="flex:1" onclick="stopStream();goTo('gallery')">⊞ Templates</button>
-    </div>
-  </div>
-</div>
-
-<!-- GIF -->
-<div id="s-gif" class="screen">
-  <div class="hdr">
-    <div class="hdr-brand">
-      <img src="assets/logos/SMEMR.svg" class="hdr-logo" alt="SMEMR" onerror="this.style.display='none'">
-      <div class="hdr-sep"></div>
-      <div class="hdr-text"><div class="hdr-univ">The University of Arizona</div><div class="hdr-dept">Your Animated GIF</div></div>
-    </div>
-  </div>
-  <div class="gif-wrap">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%">
-      <img id="gif-preview" src="" alt="Your GIF">
-      <div class="gif-status" id="gif-status"></div>
-    </div>
-  </div>
-  <div class="review-actions">
-    <button class="btn btn-primary btn-lg btn-block" onclick="goTo('delivery')">✓ Use This GIF</button>
-    <div class="review-row">
-      <button class="btn btn-secondary" style="flex:1" onclick="initCamera()">↩ Retake</button>
-      <button class="btn btn-secondary" style="flex:1" onclick="stopStream();goTo('gallery')">⊞ Templates</button>
-    </div>
-  </div>
-</div>
-
-<!-- DELIVERY -->
-<div id="s-delivery" class="screen">
-  <div class="delivery-inner">
-    <div class="check-circle">✓</div>
-    <div class="dlv-h1">Photo Ready!</div>
-    <div class="preview-thumb-wrap"><img id="delivery-thumb" src="" alt="Your photo"></div>
-    <a id="download-link" class="download-btn" download="SMEMR-Photo.jpg">⬇ Download Full-Res Photo</a>
-    <div class="gallery-save-notice">✓ Added to shared Photo Gallery</div>
-    <div class="email-row">
-      <input class="input" id="email-inp" type="email" placeholder="your@email.com" style="flex:1">
-      <button class="btn btn-secondary" onclick="sendEmail()">Send</button>
-    </div>
-    <div class="privacy">Email used only to send your photo. Not stored.</div>
-    <div style="display:flex;gap:8px;width:100%">
-      <a href="gallery.html" class="btn btn-ghost" style="flex:1;text-decoration:none;text-align:center">🖼 View Gallery</a>
-      <button class="btn btn-ghost" style="flex:1" onclick="resetBooth()">Start Over</button>
-    </div>
-  </div>
-</div>
-
-</div><!-- #app -->
-
-<div id="processing">
-  <div class="proc-ring"></div>
-  <div class="proc-text">Processing…</div>
-  <div class="proc-sub"></div>
-  <div class="proc-bar-wrap"><div class="proc-bar" id="proc-bar"></div></div>
-</div>
-
-<div id="pwa-prompt" class="pwa-prompt" style="display:none">
-  <div class="pwa-prompt-text"><strong>Install SMEMR Booth</strong>Add to home screen</div>
-  <button class="pwa-install-btn" id="pwa-install-btn">Install</button>
-  <button onclick="this.closest('#pwa-prompt').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:18px;padding:4px">✕</button>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
-<script src="js/templates.js"></script>
-<script src="js/gallery-store.js"></script>
-<script src="js/app.js"></script>
-<script>
-function toggleFS(){const e=document.documentElement;if(!document.fullscreenElement&&!document.webkitFullscreenElement)(e.requestFullscreen||e.webkitRequestFullscreen||function(){}).call(e).catch(()=>{});else(document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document);}
-['fullscreenchange','webkitfullscreenchange'].forEach(e=>document.addEventListener(e,()=>{const f=!!(document.fullscreenElement||document.webkitFullscreenElement);document.querySelectorAll('.fs-btn,.fs-fab').forEach(b=>b.textContent=f?'⤡':'⛶');}));
-document.getElementById('s-attract').addEventListener('click',function(){toggleFS();},{once:true});
-(function(){const c=document.getElementById('particle-canvas');if(!c)return;const ctx=c.getContext('2d');const pts=Array.from({length:35},()=>({x:Math.random(),y:Math.random()+.3,vx:(Math.random()-.5)*.0003,vy:-Math.random()*.0004-.0001,r:Math.random()*2+.4,a:Math.random()*.45+.1}));function resize(){c.width=c.offsetWidth;c.height=c.offsetHeight;}resize();window.addEventListener('resize',resize,{passive:true});(function f(){ctx.clearRect(0,0,c.width,c.height);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.y<-.05){p.y=1.05;p.x=Math.random();}if(p.x<0)p.x=1;if(p.x>1)p.x=0;ctx.globalAlpha=p.a;ctx.fillStyle='#C49A1B';ctx.beginPath();ctx.arc(p.x*c.width,p.y*c.height,p.r,0,Math.PI*2);ctx.fill();});ctx.globalAlpha=1;requestAnimationFrame(f);})();})();
-let _di=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();_di=e;setTimeout(()=>{document.getElementById('pwa-prompt').style.display='flex';},4000);});
-document.getElementById('pwa-install-btn').addEventListener('click',async()=>{if(!_di)return;_di.prompt();await _di.userChoice;_di=null;document.getElementById('pwa-prompt').style.display='none';});
-if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
-</script>
-</body>
-</html>
+</body></html>

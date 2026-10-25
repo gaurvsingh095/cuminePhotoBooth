@@ -1,51 +1,26 @@
-/**
- * SMEMR Photo Booth — Service Worker
- * Enables offline use after first load
- */
-const CACHE = 'smemr-booth-v3';
-const PRECACHE = [
-  './',
-  './index.html',
-  './manifest.json',
-  './css/main.css',
-  './js/templates.js',
-  './js/app.js',
-  './js/gallery-store.js',
-  './assets/logos/SMEMR.svg',
-];
-
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting())
-  );
+/** SMEMR Photo Booth offline shell. Never cache gallery APIs or user data. */
+const CACHE='smemr-booth-v4-halloween';
+const PRECACHE=['/','/index.html','/halloween.html','/manifest.json','/css/main.css','/css/halloween.css','/js/templates.js','/js/app.js','/js/halloween.js','/js/halloween-pose.js','/js/gallery-store.js','/assets/logos/SMEMR.svg'];
+self.addEventListener('install',event=>{
+  event.waitUntil(caches.open(CACHE).then(cache=>Promise.allSettled(PRECACHE.map(url=>cache.add(url)))).then(()=>self.skipWaiting()));
 });
-
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
-  );
+self.addEventListener('activate',event=>{
+  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('smemr-booth-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));
 });
-
-self.addEventListener('fetch', e => {
-  // Network first for navigations, cache first for assets
-  if (e.request.mode === 'navigate') {
-    e.respondWith(
-      fetch(e.request).catch(() => caches.match('./index.html'))
-    );
-    return;
-  }
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(res => {
-        if (res.ok && e.request.url.startsWith(self.location.origin)) {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
-        return res;
-      }).catch(() => cached);
-    })
-  );
+self.addEventListener('fetch',event=>{
+  const request=event.request;
+  if(request.method!=='GET')return;
+  const url=new URL(request.url);
+  if(url.origin!==self.location.origin||url.pathname.startsWith('/api/'))return;
+  const shell=request.mode==='navigate'||/\.(?:js|mjs|css|html)$/.test(url.pathname);
+  event.respondWith((async()=>{
+    const cache=await caches.open(CACHE);
+    if(shell){
+      try{const response=await fetch(request);if(response.ok)event.waitUntil(cache.put(request,response.clone()));return response}
+      catch{return await cache.match(request)||(request.mode==='navigate'?await cache.match('/index.html'):undefined)||Response.error()}
+    }
+    const cached=await cache.match(request);if(cached)return cached;
+    try{const response=await fetch(request);if(response.ok&&!url.pathname.startsWith('/vendor/'))event.waitUntil(cache.put(request,response.clone()));return response}
+    catch{return Response.error()}
+  })());
 });

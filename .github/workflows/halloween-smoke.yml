@@ -1,0 +1,38 @@
+name: Halloween booth browser smoke test
+on:
+  push:
+    branches: [feature/cumine-halloween-2026]
+  pull_request:
+    branches: [main]
+    paths: [public/halloween.html, public/js/halloween.js, public/js/halloween-pose.js, public/css/halloween.css, vercel.json, tests/**, .github/workflows/halloween-smoke.yml]
+jobs:
+  portrait:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save playwright@1.56.1
+      - run: npx playwright install --with-deps chromium
+      - name: Start same-origin proxy test server
+        run: |
+          node tests/halloween-server.mjs > /tmp/halloween-server.log 2>&1 &
+          echo $! > /tmp/halloween-server.pid
+          sleep 2
+      - name: Test camera-free portrait flow with a real-face image
+        run: node tests/halloween-browser.mjs
+      - name: Test mobile camera capture and manual fallback
+        run: node tests/halloween-mobile.mjs
+      - name: Test manual multi-face and scene controls
+        run: node tests/halloween-manual.mjs
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: halloween-test-screenshot
+          path: |
+            halloween-e2e.png
+            /tmp/halloween-server.log
+          if-no-files-found: ignore

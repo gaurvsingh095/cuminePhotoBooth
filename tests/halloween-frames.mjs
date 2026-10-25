@@ -4,6 +4,14 @@ let browser;
 try{
  browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:390,height:844},acceptDownloads:true});
+ await page.addInitScript(() => {
+   const original = CanvasRenderingContext2D.prototype.fillText;
+   CanvasRenderingContext2D.prototype.fillText = function(text,...args) {
+     if(String(text).includes('MINING ENGINEERING') || String(text).includes('CU AT THE MINE'))
+       (window.__frameFooterLabels ||= []).push(String(text));
+     return original.call(this,text,...args);
+   };
+ });
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  assert.equal((await page.goto('http://127.0.0.1:8765/classic-halloween.html')).status(),200);
  await page.locator('[data-style="frame"]').click();
@@ -21,6 +29,10 @@ try{
  await page.locator('#upload').setInputFiles({name:'portrait.png',mimeType:'image/png',buffer:Buffer.from(b64,'base64')});
  await page.waitForFunction(()=>!document.getElementById('download').disabled);
  assert.equal(await page.locator('#share').isDisabled(),false);
+ const labels=await page.evaluate(()=>window.__frameFooterLabels||[]);
+ assert(labels.includes('SCHOOL OF MINING ENGINEERING & MINERAL RESOURCES'),'The exported frame must carry the school’s official name');
+ assert(!labels.some(text=>text.includes('CU AT THE MINE')),'Legacy footer must not appear on a new frame');
+
  for(const id of ['specter','witch','pumpkin','moon','polaroid','copper']){
   await page.locator('[data-frame="'+id+'"]').click();
   assert.equal(await page.locator('[data-frame="'+id+'"]').getAttribute('aria-pressed'),'true');

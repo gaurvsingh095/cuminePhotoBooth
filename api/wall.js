@@ -16,9 +16,13 @@ export default async function handler(req,res){
  if(!configured())return res.status(503).json({error:'Shared wall storage is not connected. Local wall remains available.',shared:false});
  try{
   if(req.method==='GET'){
-   const ids=await kv.lrange(LIST,0,79);
+   const offset=Math.min(399,Math.max(0,Number.parseInt(req.query?.offset,10)||0));
+   const limit=Math.min(60,Math.max(1,Number.parseInt(req.query?.limit,10)||50));
+   const ids=await kv.lrange(LIST,offset,offset+limit-1);
+   const total=await kv.llen(LIST);
    const photos=await Promise.all((ids||[]).filter(idOk).map(id=>kv.get(itemKey(id))));
-   return res.status(200).json({shared:true,photos:photos.filter(Boolean)});
+   return res.status(200).json({shared:true,photos:photos.filter(Boolean),total,
+     nextOffset:offset+(ids||[]).length<total?offset+(ids||[]).length:null});
   }
   const body=typeof req.body==='string'?JSON.parse(req.body):req.body||{};
   if(req.method==='POST'){
@@ -31,13 +35,13 @@ export default async function handler(req,res){
    const key='smemr:wall:rate:'+tokenHash(host).slice(0,18);
    const attempts=await kv.incr(key);
    if(attempts===1)await kv.expire(key,3600);
-   if(attempts>15)return res.status(429).json({error:'Photo-wall limit reached. Ask the event organizer.'});
+   if(attempts>240)return res.status(429).json({error:'Photo-wall limit reached. Ask the event organizer.'});
    const id=randomBytes(12).toString('hex'),removeToken=randomBytes(24).toString('hex');
    const photo={id,thumbnail:body.thumbnail,kind:String(body.kind||'SMEMR Halloween').slice(0,42),
      createdAt:Date.now()};
    await kv.set(itemKey(id),photo,{ex:TTL});
    await kv.set(tokenKey(id),tokenHash(removeToken),{ex:TTL});
-   await kv.lpush(LIST,id);await kv.ltrim(LIST,0,199);
+   await kv.lpush(LIST,id);await kv.ltrim(LIST,0,399);
    return res.status(201).json({id,removeToken,shared:true});
   }
   if(req.method==='DELETE'){

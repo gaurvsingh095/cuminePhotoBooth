@@ -1,7 +1,7 @@
 /* SMEMR event wall: opt-in, local-first, shared only when durable Vercel KV is connected. */
 const DB_NAME='smemr_event_wall_v1';
 const MAX_LOCAL=80;
-let wallPhotos=[],wallShared=false,initialized=false,activeId=null,dbPromise;
+let wallPhotos=[],wallShared=false,wallNextOffset=null,wallTotal=0,initialized=false,activeId=null,dbPromise;
 const $=id=>document.getElementById(id);
 function database(){
  if(!('indexedDB'in window))return Promise.reject(new Error('IndexedDB not supported'));
@@ -60,17 +60,33 @@ function merged(local=[],remote=[]){
  const m=new Map();for(const item of [...local,...remote])if(item?.id&&item.thumbnail)m.set(item.id,item);
  // Prefer local record on ID collision to preserve the owner removal token.
  for(const item of local)if(item?.id&&item.thumbnail)m.set(item.id,item);
- return [...m.values()].sort((a,b)=>b.createdAt-a.createdAt).slice(0,120)
+ return [...m.values()].sort((a,b)=>b.createdAt-a.createdAt).slice(0,430)
 }
 export async function loadWall(){
  let local=[];try{local=await allLocal()}catch(e){console.warn('Device wall unavailable',e)}
  let remotePhotos=[],mode=false;
- try{const r=await remote('/api/wall');if(r.ok&&r.data.shared){remotePhotos=r.data.photos||[];mode=true}}catch(e){console.info('Wall backend not connected')}
- wallShared=mode;wallPhotos=merged(local,remotePhotos);
+ try{const r=await remote('/api/wall?offset=0&limit=50');if(r.ok&&r.data.shared){
+  remotePhotos=r.data.photos||[];mode=true;wallNextOffset=r.data.nextOffset??null;
+  wallTotal=Number(r.data.total)||remotePhotos.length;
+ }}catch(e){console.info('Wall backend not connected')}
+ wallShared=mode;if(!mode){wallNextOffset=null;wallTotal=0}wallPhotos=merged(local,remotePhotos);
  gridFill(wallPhotos);
- if($('wall-count'))$('wall-count').textContent=wallPhotos.length+' portraits';
+ if($('wall-count'))$('wall-count').textContent=wallShared?
+  wallPhotos.length+' shown · '+wallTotal+' shared':wallPhotos.length+' portraits';
+ if($('wall-more'))$('wall-more').hidden=wallNextOffset===null;
  if($('wall-mode'))$('wall-mode').textContent=wallShared?'Shared event wall • opt-in':'This-device photo wall • shared storage not connected';
  return wallPhotos;
+}
+export async function loadMoreWall(){
+ if(wallNextOffset===null)return;
+ const offset=wallNextOffset;wallNextOffset=null;
+ const button=$('wall-more');if(button)button.disabled=true;
+ try{const r=await remote('/api/wall?offset='+offset+'&limit=50');if(r.ok){
+  wallNextOffset=r.data.nextOffset??null;wallTotal=Number(r.data.total)||wallTotal;
+  wallPhotos=merged(wallPhotos,r.data.photos||[]);gridFill(wallPhotos);
+  if($('wall-count'))$('wall-count').textContent=wallPhotos.length+' shown · '+wallTotal+' shared';
+ }}catch(e){wallNextOffset=offset;console.warn('Could not load more wall photos',e)}
+ finally{if(button){button.disabled=false;button.hidden=wallNextOffset===null}}
 }
 function show(id){
  const item=wallPhotos.find(x=>x.id===id);if(!item)return;activeId=id;
@@ -114,6 +130,7 @@ export async function publishPoster(canvas,kind){
 document.addEventListener('DOMContentLoaded',()=>{
  if(!initialized){initialized=true;loadWall()}
  $('wall-refresh')?.addEventListener('click',loadWall);
+ $('wall-more')?.addEventListener('click',loadMoreWall);
  $('wall-remove')?.addEventListener('click',removeSelected);
  $('wall-close')?.addEventListener('click',()=>$('wall-dialog').close());
 });
